@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
@@ -354,8 +354,8 @@ const TaskItem = ({
 }: TaskItemProps) => {
   const [isAlertVisible, setIsAlertVisible] = useState(false);
   const [isPriorityMenuVisible, setIsPriorityMenuVisible] = useState(false);
-  const scaleAnim = new Animated.Value(1);
-  const opacityAnim = new Animated.Value(1);
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const opacityAnim = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
     Animated.sequence([
@@ -1537,7 +1537,18 @@ export default function TasksScreen() {
     const filledBlocks = Math.round((percentage / 100) * blocks);
 
     return (
-      <View style={styles.progressBarContainer}>
+      <View style={[
+        styles.progressBarContainer,
+        {
+          backgroundColor: theme.surface,
+          borderColor: theme.border,
+          shadowColor: theme.accent,
+          shadowOffset: { width: 0, height: 0 },
+          shadowOpacity: 0.2,
+          shadowRadius: 4,
+          elevation: 3
+        }
+      ]}>
         <View style={styles.progressBar}>
           {Array(blocks)
             .fill(0)
@@ -1546,13 +1557,30 @@ export default function TasksScreen() {
                 key={index}
                 style={[
                   styles.progressBlock,
-                  { backgroundColor: themes[currentTheme].surface },
-                  index < filledBlocks && { backgroundColor: themes[currentTheme].success },
+                  {
+                    backgroundColor: theme.background,
+                    borderWidth: 1,
+                    borderColor: index < filledBlocks ? theme.accent : theme.border,
+                    ...(index < filledBlocks && {
+                      backgroundColor: theme.accent,
+                      shadowColor: theme.accent,
+                      shadowOffset: { width: 0, height: 0 },
+                      shadowOpacity: 0.5,
+                      shadowRadius: 2,
+                      elevation: 2
+                    })
+                  }
                 ]}
               />
             ))}
         </View>
-        <Text style={[styles.progressText, { color: themes[currentTheme].success }]}>
+        <Text style={[
+          styles.progressText,
+          {
+            color: percentage === 100 ? theme.success : theme.accent,
+            fontWeight: percentage === 100 ? 'bold' : 'normal'
+          }
+        ]}>
           {percentage}% COMPLETE
         </Text>
       </View>
@@ -1565,14 +1593,24 @@ export default function TasksScreen() {
     );
     const totalTasks = filteredTasks.length;
     const completedTasks = filteredTasks.filter((task) => task.completed).length;
+    const percentage = ((completedTasks / totalTasks) * 100 || 0);
 
     return (
-      <View style={styles.statsContainer}>
-        <Text style={[styles.statsText, { color: themes[currentTheme].muted }]}>
+      <View style={[
+        styles.statsContainer,
+        {
+          backgroundColor: theme.surface,
+          borderColor: theme.border
+        }
+      ]}>
+        <Text style={[styles.statsText, { color: theme.muted }]}>
           {completedTasks}/{totalTasks} Tasks Complete
         </Text>
-        <Text style={[styles.statsText, { color: themes[currentTheme].muted }]}>
-          {((completedTasks / totalTasks) * 100 || 0).toFixed(0)}% Progress
+        <Text style={[
+          styles.statsText,
+          { color: percentage === 100 ? theme.success : theme.muted }
+        ]}>
+          {percentage.toFixed(0)}% Progress
         </Text>
       </View>
     );
