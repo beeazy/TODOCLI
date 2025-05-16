@@ -19,6 +19,7 @@ import TabBar from './components/TabBar';
 import TaskItem from './components/TaskItem';
 import ThemeModal, { themes } from './components/ThemeModal';
 import ThemedAlert from './components/ThemedAlert';
+import { analytics } from './services/analytics';
 import { Theme } from './types';
 
 const styles = StyleSheet.create({
@@ -409,7 +410,7 @@ export default function TasksScreen() {
     }
   };
 
-  const addTab = () => {
+  const addTab = async () => {
     const newTabName = generateUniqueTabName(tabs, 'Tab');
     const newTab = {
       id: generateUniqueId(),
@@ -418,10 +419,11 @@ export default function TasksScreen() {
     const updatedTabs = [...tabs, newTab];
     setTabs(updatedTabs);
     setActiveTab(newTab.id);
-    saveTabs(updatedTabs);
+    await saveTabs(updatedTabs);
+    analytics.trackTabCreated(newTab.id);
   };
 
-  const closeTab = (tabId: string) => {
+  const closeTab = async (tabId: string) => {
     // Prevent closing if only one tab remains
     if (tabs.length <= 1) return;
     
@@ -430,6 +432,8 @@ export default function TasksScreen() {
 
     setTabToClose(tab);
     setIsCloseTabAlertVisible(true);
+    await saveTabs(tabs.filter(t => t.id !== tabId));
+    analytics.trackTabDeleted(tabId);
   };
 
   const handleCloseTab = () => {
@@ -499,33 +503,33 @@ export default function TasksScreen() {
     }
   };
 
-  const addTask = () => {
-    if (newTask.trim() === "") return;
-
-    const newTaskItem: Task = {
-      id: Date.now().toString(),
-      text: newTask,
+  const addTask = async (taskText: string) => {
+    const newTask: Task = {
+      id: generateUniqueId(),
+      text: taskText,
       completed: false,
       createdAt: new Date().toISOString(),
       tabId: activeTab,
     };
-
-    const updatedTasks = [...tasks, newTaskItem];
-    const sortedTasks = sortTasksByPriority(updatedTasks);
-    setTasks(sortedTasks);
-    saveTasks(sortedTasks);
-    setNewTask("");
-    setIsAddingTask(false);
+    const updatedTasks = sortTasksByPriority([...tasks, newTask]);
+    setTasks(updatedTasks);
+    await saveTasks(updatedTasks);
+    analytics.trackTaskCreated(activeTab);
   };
 
-  const toggleTask = (id: string) => {
-    const updatedTasks = tasks.map((task) =>
-      task.id === id ? { ...task, completed: !task.completed } : task
-    );
-
-    const sortedTasks = sortTasksByPriority(updatedTasks);
-    setTasks(sortedTasks);
-    saveTasks(sortedTasks);
+  const toggleTask = async (taskId: string) => {
+    const updatedTasks = tasks.map(task => {
+      if (task.id === taskId) {
+        return { ...task, completed: !task.completed };
+      }
+      return task;
+    });
+    setTasks(updatedTasks);
+    await saveTasks(updatedTasks);
+    const task = updatedTasks.find(t => t.id === taskId);
+    if (task) {
+      analytics.trackTaskToggled(taskId, task.completed);
+    }
   };
 
   const getCompletionPercentage = (): number => {
@@ -618,41 +622,37 @@ export default function TasksScreen() {
     );
   };
 
-  const updateTask = (taskId: string, newText: string) => {
-    const updatedTasks = tasks.map(task =>
-      task.id === taskId ? { ...task, text: newText } : task
+  const updateTask = async (taskId: string, newText: string) => {
+    const updatedTasks = tasks.map(task => {
+      if (task.id === taskId) {
+        return { ...task, text: newText };
+      }
+      return task;
+    });
+    setTasks(updatedTasks);
+    await saveTasks(updatedTasks);
+    analytics.trackTaskUpdated(taskId, activeTab);
+  };
+
+  const deleteTask = async (taskId: string) => {
+    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    setTasks(updatedTasks);
+    await saveTasks(updatedTasks);
+    analytics.trackTaskDeleted(taskId, activeTab);
+  };
+
+  const onPriorityChange = async (taskId: string, newPriority: Task['priority']) => {
+    const updatedTasks = sortTasksByPriority(
+      tasks.map(task => {
+        if (task.id === taskId) {
+          return { ...task, priority: newPriority };
+        }
+        return task;
+      })
     );
     setTasks(updatedTasks);
-    saveTasks(updatedTasks);
-  };
-
-  const deleteTask = (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-    
-    setTaskToDelete(task);
-    setIsDeleteTaskAlertVisible(true);
-  };
-
-  const handleDeleteTask = () => {
-    if (!taskToDelete) return;
-    
-    const updatedTasks = tasks.filter(task => task.id !== taskToDelete.id);
-    setTasks(updatedTasks);
-    saveTasks(updatedTasks);
-    setIsDeleteTaskAlertVisible(false);
-    setTaskToDelete(null);
-  };
-
-  const onPriorityChange = (id: string, newPriority: Task['priority']) => {
-    const updatedTasks = tasks.map(task =>
-      task.id === id ? { ...task, priority: newPriority } : task
-    );
-    
-    // Sort tasks after updating priority
-    const sortedTasks = sortTasksByPriority(updatedTasks);
-    setTasks(sortedTasks);
-    saveTasks(sortedTasks);
+    await saveTasks(updatedTasks);
+    analytics.trackPriorityChanged(taskId, newPriority || 'P?');
   };
 
   const theme = themes[currentTheme];
@@ -675,6 +675,7 @@ export default function TasksScreen() {
         "Thank you for upgrading to Pro! All premium features are now unlocked.",
         [{ text: "OK" }]
       );
+      analytics.trackPremiumUpgrade();
     } catch (error) {
       Alert.alert(
         "Upgrade Failed",
@@ -694,9 +695,75 @@ export default function TasksScreen() {
     try {
       await AsyncStorage.setItem(THEME_STORAGE_KEY, themeName);
       setCurrentTheme(themeName);
+      analytics.trackThemeChanged(themeName);
     } catch (error) {
       console.error("Error saving theme", error);
     }
+  };
+
+  const handleTabPress = (tabId: string) => {
+    setActiveTab(tabId);
+    analytics.trackTabViewed(tabId);
+  };
+
+  const handleDeleteTask = async () => {
+    if (!taskToDelete) return;
+    await deleteTask(taskToDelete.id);
+    setIsDeleteTaskAlertVisible(false);
+    setTaskToDelete(null);
+  };
+
+  const handlePremiumButtonClick = () => {
+    analytics.trackButtonClick('premium', 'header');
+    setIsPremiumModalVisible(true);
+    analytics.trackModalOpened('premium');
+  };
+
+  const handleThemeButtonClick = () => {
+    analytics.trackButtonClick('theme', 'header');
+    setIsThemeModalVisible(true);
+    analytics.trackModalOpened('theme');
+  };
+
+  const handleAddTaskClick = () => {
+    analytics.trackButtonClick('add_task', 'main');
+    setIsAddingTask(true);
+  };
+
+  const handleAddTaskSubmit = (taskText: string) => {
+    analytics.trackInputSubmit('add_task', 'task_input');
+    addTask(taskText);
+    setNewTask("");
+    setIsAddingTask(false);
+  };
+
+  const handleCancelAddTask = () => {
+    analytics.trackButtonClick('cancel_add_task', 'task_input');
+    setNewTask("");
+    setIsAddingTask(false);
+  };
+
+  const handleEditModalClose = () => {
+    analytics.trackModalClosed('edit_task');
+    setEditingTask(null);
+  };
+
+  const handleEditModalSave = (newText: string) => {
+    if (editingTask) {
+      analytics.trackModalAction('edit_task', 'save');
+      updateTask(editingTask.id, newText);
+      setEditingTask(null);
+    }
+  };
+
+  const handleThemeModalClose = () => {
+    analytics.trackModalClosed('theme');
+    setIsThemeModalVisible(false);
+  };
+
+  const handlePremiumModalClose = () => {
+    analytics.trackModalClosed('premium');
+    setIsPremiumModalVisible(false);
   };
 
   return (
@@ -715,7 +782,7 @@ export default function TasksScreen() {
         <TabBar
           tabs={tabs}
           activeTab={activeTab}
-          onTabPress={setActiveTab}
+          onTabPress={handleTabPress}
           onAddTab={addTab}
           onCloseTab={closeTab}
           theme={theme}
@@ -727,7 +794,7 @@ export default function TasksScreen() {
           <View style={styles.headerActions}>
             <TouchableOpacity
               style={styles.headerButton}
-              onPress={() => setIsPremiumModalVisible(true)}
+              onPress={handlePremiumButtonClick}
             >
               <Text style={[styles.headerButtonText, { color: theme.accent }]}>
                 pro
@@ -736,7 +803,7 @@ export default function TasksScreen() {
             <Text style={[styles.headerButtonText, { color: theme.muted }]}>|</Text>
             <TouchableOpacity
               style={styles.headerButton}
-              onPress={() => setIsThemeModalVisible(true)}
+              onPress={handleThemeButtonClick}
             >
               <Text style={[styles.headerButtonText, { color: theme.accent }]}>
                 theme
@@ -765,25 +832,21 @@ export default function TasksScreen() {
                 autoFocus
                 selectionColor={theme.accent}
                 returnKeyType="done"
-                onSubmitEditing={addTask}
+                onSubmitEditing={() => handleAddTaskSubmit(newTask)}
               />
             </View>
             <View style={styles.buttonRow}>
               <TouchableOpacity
                 style={styles.button}
-                onPress={addTask}
+                onPress={() => handleAddTaskSubmit(newTask)}
               >
                 <Text style={[styles.buttonText, { color: theme.accent }]}>
                   add
                 </Text>
               </TouchableOpacity>
-              <Text style={[styles.buttonText, { color: theme.muted }]}>|</Text>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => {
-                  setNewTask("");
-                  setIsAddingTask(false);
-                }}
+                onPress={handleCancelAddTask}
               >
                 <Text style={[styles.buttonText, { color: theme.muted }]}>
                   cancel
@@ -794,7 +857,7 @@ export default function TasksScreen() {
         ) : (
           <TouchableOpacity
             style={styles.addButton}
-            onPress={() => setIsAddingTask(true)}
+            onPress={handleAddTaskClick}
           >
             <Text style={[styles.addButtonText, { color: theme.accent }]}>
               $ add task
@@ -824,13 +887,8 @@ export default function TasksScreen() {
 
         <EditModal
           visible={!!editingTask}
-          onClose={() => setEditingTask(null)}
-          onSave={(newText) => {
-            if (editingTask) {
-              updateTask(editingTask.id, newText);
-              setEditingTask(null);
-            }
-          }}
+          onClose={handleEditModalClose}
+          onSave={handleEditModalSave}
           initialValue={editingTask?.text || ""}
           title="EDIT TASK"
           theme={theme}
@@ -838,14 +896,14 @@ export default function TasksScreen() {
 
         <ThemeModal
           visible={isThemeModalVisible}
-          onClose={() => setIsThemeModalVisible(false)}
+          onClose={handleThemeModalClose}
           currentTheme={currentTheme}
           onSelectTheme={saveTheme}
         />
 
         <PremiumModal
           visible={isPremiumModalVisible}
-          onClose={() => setIsPremiumModalVisible(false)}
+          onClose={handlePremiumModalClose}
           theme={theme}
           onUpgrade={handleUpgrade}
           isPremium={isPremium}
@@ -880,13 +938,10 @@ export default function TasksScreen() {
 
         <ThemedAlert
           visible={isDeleteTaskAlertVisible}
-          title="rm -rf task"
+          title="Delete Task"
           message={taskToDelete ? `Are you sure you want to delete "${taskToDelete.text}"?` : ''}
           theme={theme}
-          onDismiss={() => {
-            setIsDeleteTaskAlertVisible(false);
-            setTaskToDelete(null);
-          }}
+          onDismiss={() => setIsDeleteTaskAlertVisible(false)}
           actions={[
             {
               text: "Cancel",

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { analytics } from '../services/analytics';
 import { Theme } from '../types';
 import PriorityModal from './PriorityModal';
 
@@ -52,19 +53,29 @@ export default function TaskItem({
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
 
-  const handlePress = () => {
-    Animated.sequence([
-      Animated.timing(scaleAnim, {
-        toValue: 0.95,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-      Animated.timing(scaleAnim, {
-        toValue: 1,
-        duration: 100,
-        useNativeDriver: true,
-      }),
-    ]).start(() => onToggle(item.id));
+  const handleToggle = () => {
+    analytics.trackButtonClick('toggle_task', `task_${item.id}`);
+    onToggle(item.id);
+  };
+
+  const handleEdit = () => {
+    analytics.trackButtonClick('edit_task', `task_${item.id}`);
+    onEdit(item);
+  };
+
+  const handleDelete = () => {
+    analytics.trackButtonClick('delete_task', `task_${item.id}`);
+    onDelete(item.id);
+  };
+
+  const handlePriorityChange = (newPriority: Task['priority']) => {
+    analytics.trackButtonClick('change_priority', `task_${item.id}`);
+    // if (!isPremium) {
+    //   analytics.trackInteraction('premium_required', 'priority_change', { taskId: item.id });
+    //   onPremiumPrompt();
+    //   return;
+    // }
+    onPriorityChange(item.id, newPriority);
   };
 
   const handlePriorityClick = () => {
@@ -82,7 +93,7 @@ export default function TaskItem({
         },
       ]}
     >
-      <AnimatedTouchable style={styles.taskItem} onPress={handlePress}>
+      <AnimatedTouchable style={styles.taskItem} onPress={handleToggle}>
         <Text
           style={[
             styles.taskText,
@@ -107,7 +118,7 @@ export default function TaskItem({
         <Text style={[styles.separator, { color: theme.muted }]}>|</Text>
         <TouchableOpacity
           style={[styles.actionButton]}
-          onPress={() => onEdit(item)}
+          onPress={handleEdit}
         >
           <Text style={[styles.actionButtonText, { color: theme.accent }]}>
             edit
@@ -116,7 +127,7 @@ export default function TaskItem({
         <Text style={[styles.separator, { color: theme.muted }]}>|</Text>
         <TouchableOpacity
           style={[styles.actionButton]}
-          onPress={() => onDelete(item.id)}
+          onPress={handleDelete}
         >
           <Text style={[styles.actionButtonText, { color: theme.error }]}>
             del
@@ -128,7 +139,7 @@ export default function TaskItem({
         visible={isPriorityModalVisible}
         onClose={() => setIsPriorityModalVisible(false)}
         onSelectPriority={(priority) => {
-          onPriorityChange(item.id, priority);
+          handlePriorityChange(priority);
           setIsPriorityModalVisible(false);
         }}
         currentPriority={item.priority}
