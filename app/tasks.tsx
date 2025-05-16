@@ -18,6 +18,7 @@ import PremiumModal from './components/PremiumModal';
 import TabBar from './components/TabBar';
 import TaskItem from './components/TaskItem';
 import ThemeModal, { themes } from './components/ThemeModal';
+import ThemedAlert from './components/ThemedAlert';
 import { Theme } from './types';
 
 const styles = StyleSheet.create({
@@ -390,6 +391,25 @@ interface Tab {
 
 const TABS_STORAGE_KEY = '@terminal_todo_tabs';
 
+// Add helper function to generate unique IDs
+function generateUniqueId(): string {
+  return `tab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
+// Add helper function to generate unique tab name
+function generateUniqueTabName(existingTabs: Tab[], baseName: string): string {
+  // const existingNames = new Set(existingTabs.map(tab => tab.title));
+  // let newName = baseName;
+  // let counter = 1;
+  
+  // while (existingNames.has(newName)) {
+  //   newName = `${baseName} ${counter}`;
+  //   counter++;
+  // }
+  
+  return "Tab";
+}
+
 export default function TasksScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState("");
@@ -400,8 +420,35 @@ export default function TasksScreen() {
   const [isPremiumModalVisible, setIsPremiumModalVisible] = useState(false);
   const [isPremium, setIsPremium] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
-  const [tabs, setTabs] = useState<Tab[]>([{ id: '1', title: 'Main' }]);
-  const [activeTab, setActiveTab] = useState('1');
+  const [tabs, setTabs] = useState<Tab[]>([{ id: generateUniqueId(), title: 'Main' }]);
+  const [activeTab, setActiveTab] = useState<string>('');
+  const [isCloseTabAlertVisible, setIsCloseTabAlertVisible] = useState(false);
+  const [tabToClose, setTabToClose] = useState<Tab | null>(null);
+  const [isDeleteTaskAlertVisible, setIsDeleteTaskAlertVisible] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+
+  const PRIORITY_ORDER: Task['priority'][] = ['P0', 'P1', 'P2', 'P3'];
+
+  // Add helper function for sorting tasks
+  const sortTasksByPriority = (tasks: Task[]): Task[] => {
+    return [...tasks].sort((a, b) => {
+      // First sort by priority
+      const priorityA = a.priority ? PRIORITY_ORDER.indexOf(a.priority) : PRIORITY_ORDER.length;
+      const priorityB = b.priority ? PRIORITY_ORDER.indexOf(b.priority) : PRIORITY_ORDER.length;
+      
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+      
+      // If priorities are equal, sort by completion status
+      if (a.completed !== b.completed) {
+        return a.completed ? 1 : -1;
+      }
+      
+      // If completion status is equal, sort by creation date (newest first)
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+  };
 
   useEffect(() => {
     loadTabs();
@@ -434,10 +481,10 @@ export default function TasksScreen() {
   };
 
   const addTab = () => {
-    const newTabNumber = tabs.length + 1;
+    const newTabName = generateUniqueTabName(tabs, 'Tab');
     const newTab = {
-      id: newTabNumber.toString(),
-      title: `Tab ${newTabNumber}`,
+      id: generateUniqueId(),
+      title: newTabName,
     };
     const updatedTabs = [...tabs, newTab];
     setTabs(updatedTabs);
@@ -446,23 +493,37 @@ export default function TasksScreen() {
   };
 
   const closeTab = (tabId: string) => {
+    // Prevent closing if only one tab remains
     if (tabs.length <= 1) return;
     
-    const updatedTabs = tabs.filter(tab => tab.id !== tabId);
+    const tab = tabs.find(tab => tab.id === tabId);
+    if (!tab) return;
+
+    setTabToClose(tab);
+    setIsCloseTabAlertVisible(true);
+  };
+
+  const handleCloseTab = () => {
+    if (!tabToClose) return;
+
+    const updatedTabs = tabs.filter(tab => tab.id !== tabToClose.id);
     setTabs(updatedTabs);
     
     // Move tasks from closed tab to first tab
     const updatedTasks = tasks.map(task => 
-      task.tabId === tabId ? { ...task, tabId: updatedTabs[0].id } : task
+      task.tabId === tabToClose.id ? { ...task, tabId: updatedTabs[0].id } : task
     );
     setTasks(updatedTasks);
     saveTasks(updatedTasks);
     
-    if (activeTab === tabId) {
+    // If closing active tab, switch to first available tab
+    if (activeTab === tabToClose.id) {
       setActiveTab(updatedTabs[0].id);
     }
     
     saveTabs(updatedTabs);
+    setIsCloseTabAlertVisible(false);
+    setTabToClose(null);
   };
 
   const STORAGE_KEY = '@terminal_todo_app';
@@ -471,7 +532,8 @@ export default function TasksScreen() {
     try {
       const storedTasks = await AsyncStorage.getItem(STORAGE_KEY);
       if (storedTasks !== null) {
-        setTasks(JSON.parse(storedTasks));
+        const parsedTasks = JSON.parse(storedTasks);
+        setTasks(sortTasksByPriority(parsedTasks));
       }
     } catch (error) {
       console.error("Error loading tasks", error);
@@ -520,8 +582,9 @@ export default function TasksScreen() {
     };
 
     const updatedTasks = [...tasks, newTaskItem];
-    setTasks(updatedTasks);
-    saveTasks(updatedTasks);
+    const sortedTasks = sortTasksByPriority(updatedTasks);
+    setTasks(sortedTasks);
+    saveTasks(sortedTasks);
     setNewTask("");
     setIsAddingTask(false);
   };
@@ -531,8 +594,9 @@ export default function TasksScreen() {
       task.id === id ? { ...task, completed: !task.completed } : task
     );
 
-    setTasks(updatedTasks);
-    saveTasks(updatedTasks);
+    const sortedTasks = sortTasksByPriority(updatedTasks);
+    setTasks(sortedTasks);
+    saveTasks(sortedTasks);
   };
 
   const getCompletionPercentage = (): number => {
@@ -634,17 +698,32 @@ export default function TasksScreen() {
   };
 
   const deleteTask = (taskId: string) => {
-    const updatedTasks = tasks.filter(task => task.id !== taskId);
-    setTasks(updatedTasks);
-    saveTasks(updatedTasks);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    setTaskToDelete(task);
+    setIsDeleteTaskAlertVisible(true);
   };
 
-  const onPriorityChange = (id: string, priority: Task['priority']) => {
-    const updatedTasks = tasks.map(task =>
-      task.id === id ? { ...task, priority } : task
-    );
+  const handleDeleteTask = () => {
+    if (!taskToDelete) return;
+    
+    const updatedTasks = tasks.filter(task => task.id !== taskToDelete.id);
     setTasks(updatedTasks);
     saveTasks(updatedTasks);
+    setIsDeleteTaskAlertVisible(false);
+    setTaskToDelete(null);
+  };
+
+  const onPriorityChange = (id: string, newPriority: Task['priority']) => {
+    const updatedTasks = tasks.map(task =>
+      task.id === id ? { ...task, priority: newPriority } : task
+    );
+    
+    // Sort tasks after updating priority
+    const sortedTasks = sortTasksByPriority(updatedTasks);
+    setTasks(sortedTasks);
+    saveTasks(sortedTasks);
   };
 
   const theme = themes[currentTheme];
@@ -853,6 +932,58 @@ export default function TasksScreen() {
           onUpgrade={handleUpgrade}
           isPremium={isPremium}
           isUpgrading={isUpgrading}
+        />
+
+        <ThemedAlert
+          visible={isCloseTabAlertVisible}
+          title="Close Tab"
+          message={tabToClose ? `Are you sure you want to close "${tabToClose.title}"? Tasks in this tab will be moved to the first tab.` : ''}
+          theme={theme}
+          onDismiss={() => {
+            setIsCloseTabAlertVisible(false);
+            setTabToClose(null);
+          }}
+          actions={[
+            {
+              text: "Cancel",
+              style: "cancel",
+              onPress: () => {
+                setIsCloseTabAlertVisible(false);
+                setTabToClose(null);
+              }
+            },
+            {
+              text: "Close",
+              style: "destructive",
+              onPress: handleCloseTab
+            }
+          ]}
+        />
+
+        <ThemedAlert
+          visible={isDeleteTaskAlertVisible}
+          title="Delete Task"
+          message={taskToDelete ? `Are you sure you want to delete "${taskToDelete.text}"?` : ''}
+          theme={theme}
+          onDismiss={() => {
+            setIsDeleteTaskAlertVisible(false);
+            setTaskToDelete(null);
+          }}
+          actions={[
+            {
+              text: "Cancel",
+              style: "cancel",
+              onPress: () => {
+                setIsDeleteTaskAlertVisible(false);
+                setTaskToDelete(null);
+              }
+            },
+            {
+              text: "Delete",
+              style: "destructive",
+              onPress: handleDeleteTask
+            }
+          ]}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

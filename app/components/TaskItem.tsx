@@ -1,12 +1,13 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
-    Animated,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Theme } from '../types';
+import PriorityModal from './PriorityModal';
 
 interface Task {
   id: string;
@@ -47,6 +48,7 @@ export default function TaskItem({
   theme,
   isPremium,
 }: TaskItemProps) {
+  const [isPriorityModalVisible, setIsPriorityModalVisible] = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const opacityAnim = useRef(new Animated.Value(1)).current;
 
@@ -66,11 +68,7 @@ export default function TaskItem({
   };
 
   const handlePriorityClick = () => {
-    if (!isPremium) {
-      onPremiumPrompt();
-      return;
-    }
-    onPriorityChange(item.id, item.priority);
+    setIsPriorityModalVisible(true);
   };
 
   const renderPriorityButton = () => {
@@ -78,14 +76,27 @@ export default function TaskItem({
     const priorityColor = currentPriority ? PRIORITIES[currentPriority].color : theme.muted;
 
     return (
-      <TouchableOpacity
-        style={[styles.priorityButton, { borderColor: priorityColor }]}
-        onPress={handlePriorityClick}
-      >
-        <Text style={[styles.priorityButtonText, { color: priorityColor }]}>
-          {currentPriority || 'P?'}
-        </Text>
-      </TouchableOpacity>
+      <>
+        <TouchableOpacity
+          style={[styles.priorityButton, { borderColor: priorityColor }]}
+          onPress={handlePriorityClick}
+        >
+          <Text style={[styles.priorityButtonText, { color: priorityColor }]}>
+            {currentPriority || 'P?'}
+          </Text>
+        </TouchableOpacity>
+
+        <PriorityModal
+          visible={isPriorityModalVisible}
+          onClose={() => setIsPriorityModalVisible(false)}
+          onSelectPriority={(priority) => {
+            onPriorityChange(item.id, priority);
+            setIsPriorityModalVisible(false);
+          }}
+          currentPriority={item.priority}
+          theme={theme}
+        />
+      </>
     );
   };
 
@@ -96,7 +107,7 @@ export default function TaskItem({
         {
           opacity: opacityAnim,
           transform: [{ scale: scaleAnim }],
-          borderColor: item.priority ? PRIORITIES[item.priority].color : theme.border,
+          borderColor: theme.border,
           backgroundColor: theme.surface,
         },
       ]}
@@ -188,6 +199,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     borderWidth: 1,
     marginRight: 8,
+    minWidth: 40,
+    alignItems: 'center',
   },
   priorityButtonText: {
     fontFamily: 'monospace',
