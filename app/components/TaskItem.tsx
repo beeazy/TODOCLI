@@ -71,35 +71,6 @@ export default function TaskItem({
     setIsPriorityModalVisible(true);
   };
 
-  const renderPriorityButton = () => {
-    const currentPriority = item.priority;
-    const priorityColor = currentPriority ? PRIORITIES[currentPriority].color : theme.muted;
-
-    return (
-      <>
-        <TouchableOpacity
-          style={[styles.priorityButton, { borderColor: priorityColor }]}
-          onPress={handlePriorityClick}
-        >
-          <Text style={[styles.priorityButtonText, { color: priorityColor }]}>
-            {currentPriority || 'P?'}
-          </Text>
-        </TouchableOpacity>
-
-        <PriorityModal
-          visible={isPriorityModalVisible}
-          onClose={() => setIsPriorityModalVisible(false)}
-          onSelectPriority={(priority) => {
-            onPriorityChange(item.id, priority);
-            setIsPriorityModalVisible(false);
-          }}
-          currentPriority={item.priority}
-          theme={theme}
-        />
-      </>
-    );
-  };
-
   return (
     <Animated.View
       style={[
@@ -107,8 +78,7 @@ export default function TaskItem({
         {
           opacity: opacityAnim,
           transform: [{ scale: scaleAnim }],
-          borderColor: theme.border,
-          backgroundColor: theme.surface,
+          backgroundColor: 'transparent',
         },
       ]}
     >
@@ -120,35 +90,50 @@ export default function TaskItem({
             item.completed && [styles.taskTextCompleted, { color: theme.muted }]
           ]}
         >
-          {item.completed ? "[✓] " : "[ ] "}
-          {item.text}
+          {item.completed ? "✓" : "·"} {item.priority ? `[${item.priority}]` : '[--]'} {item.text}
         </Text>
       </AnimatedTouchable>
       <View style={styles.actions}>
-        {renderPriorityButton()}
         <TouchableOpacity
-          style={[styles.actionButton, { 
-            backgroundColor: 'transparent',
-            borderColor: theme.accent 
-          }]}
+          style={[styles.actionButton]}
+          onPress={handlePriorityClick}
+        >
+          <Text style={[styles.actionButtonText, { 
+            color: item.priority ? PRIORITIES[item.priority].color : theme.muted 
+          }]}>
+            pri
+          </Text>
+        </TouchableOpacity>
+        <Text style={[styles.separator, { color: theme.muted }]}>|</Text>
+        <TouchableOpacity
+          style={[styles.actionButton]}
           onPress={() => onEdit(item)}
         >
           <Text style={[styles.actionButtonText, { color: theme.accent }]}>
-            Edit
+            edit
           </Text>
         </TouchableOpacity>
+        <Text style={[styles.separator, { color: theme.muted }]}>|</Text>
         <TouchableOpacity
-          style={[styles.actionButton, { 
-            backgroundColor: 'transparent',
-            borderColor: theme.error
-          }]}
+          style={[styles.actionButton]}
           onPress={() => onDelete(item.id)}
         >
           <Text style={[styles.actionButtonText, { color: theme.error }]}>
-            Delete
+            del
           </Text>
         </TouchableOpacity>
       </View>
+
+      <PriorityModal
+        visible={isPriorityModalVisible}
+        onClose={() => setIsPriorityModalVisible(false)}
+        onSelectPriority={(priority) => {
+          onPriorityChange(item.id, priority);
+          setIsPriorityModalVisible(false);
+        }}
+        currentPriority={item.priority}
+        theme={theme}
+      />
     </Animated.View>
   );
 }
@@ -157,54 +142,38 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 12,
-    borderRadius: 6,
-    overflow: "hidden",
-    borderWidth: 1,
+    marginBottom: 8,
   },
   taskItem: {
     flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
   },
   taskText: {
     fontFamily: "monospace",
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 14,
+    lineHeight: 20,
   },
   taskTextCompleted: {
     textDecorationLine: "line-through",
   },
   actions: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
     paddingRight: 12,
   },
   actionButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 4,
-    borderWidth: 1,
-    minWidth: 70,
-    alignItems: 'center',
+    paddingVertical: 4,
+    paddingHorizontal: 4,
   },
   actionButtonText: {
     fontFamily: "monospace",
     fontSize: 13,
     letterSpacing: 0.5,
   },
-  priorityButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 4,
-    borderWidth: 1,
-    marginRight: 8,
-    minWidth: 40,
-    alignItems: 'center',
-  },
-  priorityButtonText: {
+  separator: {
     fontFamily: 'monospace',
     fontSize: 13,
-    fontWeight: '600',
-  },
+  }
 }); 
