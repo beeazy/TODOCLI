@@ -1,11 +1,10 @@
 import React from 'react';
 import {
-    ActivityIndicator,
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Theme } from '../types';
 
@@ -43,73 +42,60 @@ export default function PremiumModal({
         ]}>
           <View style={[styles.header, { borderBottomColor: theme.border }]}>
             <Text style={[styles.title, { color: theme.accent }]}>
-              {isPremium ? 'PRO FEATURES' : 'UPGRADE TO PRO'}
+              PRO FEATURES
             </Text>
           </View>
 
           <View style={styles.content}>
-            {isPremium ? (
-              <Text style={[styles.message, { color: theme.foreground }]}>
-                Thank you for being a Pro user! You have access to all premium features:
-              </Text>
-            ) : (
-              <Text style={[styles.message, { color: theme.foreground }]}>
-                Upgrade to Pro to unlock premium features:
-              </Text>
-            )}
+            <Text style={[styles.message, { color: theme.foreground }]}>
+              Pro subscriptions coming soon! Here's what you'll get:
+            </Text>
 
             <View style={styles.featureList}>
               <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Task Priority Management
+                • Task Due Dates & Reminders
               </Text>
               <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Unlimited Projects
+                • Recurring Tasks
               </Text>
               <Text style={[styles.feature, { color: theme.foreground }]}>
                 • Advanced Task Analytics
               </Text>
               <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Custom Task Categories
+                • Task Notes & Attachments
               </Text>
               <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Priority-based Sorting
+                • Subtasks & Dependencies
+              </Text>
+              <Text style={[styles.feature, { color: theme.foreground }]}>
+                • Custom Task Labels
+              </Text>
+              <Text style={[styles.feature, { color: theme.foreground }]}>
+                • Task Export & Cloud Backup
+              </Text>
+              <Text style={[styles.feature, { color: theme.foreground }]}>
+                • More themes and colors
               </Text>
             </View>
 
-            {!isPremium && (
-              <View style={styles.pricing}>
-                <Text style={[styles.priceTag, { color: theme.accent }]}>
-                  $4.99/month
-                </Text>
-                <Text style={[styles.priceNote, { color: theme.muted }]}>
-                  Cancel anytime
-                </Text>
-              </View>
-            )}
+            <View style={styles.pricing}>
+              <Text style={[styles.priceTag, { color: theme.accent }]}>
+                {/* ;) */}
+                $1.99/month (or less)
+              </Text>
+              <Text style={[styles.priceNote, { color: theme.muted }]}>
+                Available soon
+              </Text>
+            </View>
           </View>
 
           <View style={styles.footer}>
-            {!isPremium && (
-              <TouchableOpacity
-                style={[styles.button, { borderColor: theme.accent }]}
-                onPress={onUpgrade}
-                disabled={isUpgrading}
-              >
-                {isUpgrading ? (
-                  <ActivityIndicator color={theme.accent} />
-                ) : (
-                  <Text style={[styles.buttonText, { color: theme.accent }]}>
-                    Upgrade Now
-                  </Text>
-                )}
-              </TouchableOpacity>
-            )}
             <TouchableOpacity
               style={[styles.button, { borderColor: theme.muted }]}
               onPress={onClose}
             >
               <Text style={[styles.buttonText, { color: theme.muted }]}>
-                Close
+                close
               </Text>
             </TouchableOpacity>
           </View>
