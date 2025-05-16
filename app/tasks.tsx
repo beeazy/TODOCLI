@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 12 : (StatusBar.currentHeight ?? 24) + 12,
     paddingBottom: Platform.OS === 'ios' ? 34 : 24,
   },
@@ -35,224 +35,153 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 28,
-    paddingVertical: 12,
+    marginBottom: 20,
+    paddingVertical: 8,
     borderBottomWidth: 1,
   },
   headerTitle: {
     fontFamily: "monospace",
-    fontSize: 24,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "600",
+    letterSpacing: 1,
   },
   headerActions: {
     flexDirection: 'row',
-    gap: 12,
+    gap: 8,
   },
-  themeButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderRadius: 4,
-  },
-  themeButtonText: {
-    fontFamily: "monospace",
-    fontSize: 14,
-  },
-  premiumButton: {
+  headerButton: {
     paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderRadius: 4,
+    paddingVertical: 4,
   },
-  premiumButtonText: {
+  headerButtonText: {
+    fontFamily: "monospace",
+    fontSize: 13,
+    letterSpacing: 0.5,
+  },
+  progressBarContainer: {
+    marginBottom: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  progressBar: {
+    flexDirection: "row",
+    marginBottom: 8,
+    justifyContent: "center",
+    gap: 2,
+  },
+  progressBlock: {
+    width: 16,
+    height: 16,
+    borderRadius: 2,
+  },
+  progressText: {
+    fontFamily: "monospace",
+    fontSize: 13,
+    textAlign: 'center',
+    letterSpacing: 1,
+  },
+  statsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+  },
+  statsText: {
+    fontFamily: "monospace",
+    fontSize: 12,
+    letterSpacing: 0.5,
+  },
+  addTaskContainer: {
+    marginVertical: 16,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  promptSymbol: {
+    fontFamily: "monospace",
+    fontSize: 16,
+    marginRight: 8,
+  },
+  input: {
+    flex: 1,
     fontFamily: "monospace",
     fontSize: 14,
-    fontWeight: '600',
+    padding: 0,
+    height: 24,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: 8,
+  },
+  button: {
+    paddingVertical: 4,
+    paddingHorizontal: 12,
+  },
+  buttonText: {
+    fontFamily: "monospace",
+    fontSize: 13,
+    letterSpacing: 0.5,
+  },
+  addButton: {
+    marginVertical: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
+  },
+  addButtonText: {
+    fontFamily: "monospace",
+    fontSize: 13,
+    letterSpacing: 0.5,
+  },
+  taskList: {
+    flex: 1,
+  },
+  taskListContent: {
+    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.95)",
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 16,
   },
   modalContent: {
     width: "100%",
     maxWidth: 500,
-    borderWidth: 1,
-    padding: 24,
+    padding: 16,
     maxHeight: "90%",
-    borderRadius: 8,
   },
   modalTitle: {
     fontFamily: "monospace",
-    fontSize: 20,
-    marginBottom: 24,
+    fontSize: 16,
+    marginBottom: 16,
     textAlign: "center",
-    letterSpacing: 2,
+    letterSpacing: 1,
   },
   editHeader: {
     borderBottomWidth: 1,
-    paddingBottom: 16,
-    marginBottom: 24,
+    paddingBottom: 12,
+    marginBottom: 16,
   },
   editContainer: {
-    padding: 16,
-    borderRadius: 6,
-    marginBottom: 24,
+    padding: 12,
+    marginBottom: 16,
   },
   editActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 12,
-  },
-  inputWrapper: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  promptSymbol: {
-    fontFamily: "monospace",
-    fontSize: 18,
-    marginRight: 12,
-  },
-  input: {
-    flex: 1,
-    fontFamily: "monospace",
-    fontSize: 16,
-    padding: 0,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 12,
-  },
-  button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderWidth: 1,
-    borderRadius: 4,
-    minWidth: 80,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontFamily: "monospace",
-    fontSize: 14,
-    letterSpacing: 0.5,
+    gap: 8,
   },
   errorText: {
     fontFamily: 'monospace',
     fontSize: 12,
     marginTop: 8,
-  },
-  progressBarContainer: {
-    alignItems: "center",
-    marginBottom: 28,
-    marginHorizontal: 8,
-    width: "auto",
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  progressBar: {
-    flexDirection: "row",
-    marginBottom: 12,
-    justifyContent: "center",
-    gap: 4,
-  },
-  progressBlock: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-  },
-  progressText: {
-    fontFamily: "monospace",
-    fontSize: 14,
-    marginTop: 8,
-    letterSpacing: 1,
-  },
-  statsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-    marginHorizontal: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderRadius: 6,
-    borderWidth: 1,
-  },
-  statsText: {
-    fontFamily: "monospace",
-    fontSize: 13,
-  },
-  categoryContainer: {
-    marginBottom: 24,
-    marginHorizontal: 8,
-  },
-  categoryButton: {
-    borderWidth: 1,
-    padding: 16,
-    alignItems: "center",
-    borderRadius: 6,
-  },
-  categoryButtonText: {
-    fontFamily: "monospace",
-    fontSize: 16,
-    letterSpacing: 1,
-  },
-  categoryList: {
-    maxHeight: 300,
-    marginBottom: 24,
-  },
-  categoryItemContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  categoryItem: {
-    flex: 1,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  categoryItemText: {
-    fontFamily: "monospace",
-    fontSize: 15,
-  },
-  addCategoryContainer: {
-    marginVertical: 16,
-    borderWidth: 1,
-    padding: 20,
-    borderRadius: 6,
-  },
-  addButton: {
-    marginHorizontal: 8,
-    marginVertical: 20,
-    padding: 16,
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 6,
-  },
-  addButtonText: {
-    fontFamily: "monospace",
-    fontSize: 16,
-    letterSpacing: 1,
-  },
-  addTaskContainer: {
-    marginHorizontal: 8,
-    marginVertical: 20,
-    borderWidth: 1,
-    padding: 20,
-    borderRadius: 6,
-  },
-  taskList: {
-    flex: 1,
-    marginHorizontal: 8,
-  },
-  taskListContent: {
-    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
   },
 });
 
@@ -791,25 +720,26 @@ export default function TasksScreen() {
           onCloseTab={closeTab}
           theme={theme}
         />
-        <View style={styles.header}>
+        <View style={[styles.header, { borderBottomColor: theme.border }]}>
           <Text style={[styles.headerTitle, { color: theme.accent }]}>
-            TODO CLI
+            $ todo
           </Text>
           <View style={styles.headerActions}>
             <TouchableOpacity
-              style={[styles.premiumButton, { borderColor: theme.accent }]}
+              style={styles.headerButton}
               onPress={() => setIsPremiumModalVisible(true)}
             >
-              <Text style={[styles.premiumButtonText, { color: theme.accent }]}>
-                PRO
+              <Text style={[styles.headerButtonText, { color: theme.accent }]}>
+                pro
               </Text>
             </TouchableOpacity>
+            <Text style={[styles.headerButtonText, { color: theme.muted }]}>|</Text>
             <TouchableOpacity
-              style={[styles.themeButton, { borderColor: theme.accent }]}
+              style={styles.headerButton}
               onPress={() => setIsThemeModalVisible(true)}
             >
-              <Text style={[styles.themeButtonText, { color: theme.accent }]}>
-                THEME
+              <Text style={[styles.headerButtonText, { color: theme.accent }]}>
+                theme
               </Text>
             </TouchableOpacity>
           </View>
@@ -819,22 +749,18 @@ export default function TasksScreen() {
         {renderStats()}
 
         {isAddingTask ? (
-          <View style={[styles.addTaskContainer, { 
-            backgroundColor: theme.surface,
-            borderColor: theme.accent 
-          }]}>
-            <View style={[styles.inputWrapper, { backgroundColor: theme.surface }]}>
+          <View style={styles.addTaskContainer}>
+            <View style={styles.inputWrapper}>
               <Text style={[styles.promptSymbol, { color: theme.accent }]}>
-                &gt;
+                $
               </Text>
               <TextInput
                 style={[styles.input, { 
                   color: theme.foreground,
-                  backgroundColor: theme.surface
                 }]}
                 value={newTask}
                 onChangeText={setNewTask}
-                placeholder="Enter task..."
+                placeholder="add task..."
                 placeholderTextColor={theme.muted}
                 autoFocus
                 selectionColor={theme.accent}
@@ -844,42 +770,34 @@ export default function TasksScreen() {
             </View>
             <View style={styles.buttonRow}>
               <TouchableOpacity
-                style={[styles.button, { 
-                  backgroundColor: theme.surface,
-                  borderColor: theme.accent 
-                }]}
+                style={styles.button}
                 onPress={addTask}
               >
                 <Text style={[styles.buttonText, { color: theme.accent }]}>
-                  Add
+                  add
                 </Text>
               </TouchableOpacity>
+              <Text style={[styles.buttonText, { color: theme.muted }]}>|</Text>
               <TouchableOpacity
-                style={[styles.button, { 
-                  backgroundColor: theme.surface,
-                  borderColor: theme.accent 
-                }]}
+                style={styles.button}
                 onPress={() => {
                   setNewTask("");
                   setIsAddingTask(false);
                 }}
               >
-                <Text style={[styles.buttonText, { color: theme.accent }]}>
-                  Cancel
+                <Text style={[styles.buttonText, { color: theme.muted }]}>
+                  cancel
                 </Text>
               </TouchableOpacity>
             </View>
           </View>
         ) : (
           <TouchableOpacity
-            style={[styles.addButton, { 
-              backgroundColor: theme.surface,
-              borderColor: theme.accent 
-            }]}
+            style={styles.addButton}
             onPress={() => setIsAddingTask(true)}
           >
             <Text style={[styles.addButtonText, { color: theme.accent }]}>
-              + ADD TASK
+              $ add task
             </Text>
           </TouchableOpacity>
         )}
