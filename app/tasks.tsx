@@ -880,7 +880,7 @@ export default function TasksScreen() {
 
         <ThemedAlert
           visible={isDeleteTaskAlertVisible}
-          title="Delete Task"
+          title="rm -rf task"
           message={taskToDelete ? `Are you sure you want to delete "${taskToDelete.text}"?` : ''}
           theme={theme}
           onDismiss={() => {

@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Theme } from '../types';
 
@@ -48,50 +48,45 @@ export default function ThemedAlert({
         ]}>
           <View style={[styles.header, { borderBottomColor: theme.border }]}>
             <Text style={[styles.title, { color: theme.accent }]}>
-              {title}
+              $ {title.toLowerCase()}
             </Text>
           </View>
 
           <View style={styles.messageContainer}>
-            <Text style={[styles.message, { color: theme.foreground }]}>
-              {message}
+            <Text style={[styles.message, { color: theme.muted }]}>
+              {'>>'} {message}
             </Text>
           </View>
 
           <View style={styles.actions}>
             {actions.map((action, index) => (
-              <TouchableOpacity
-                key={index}
-                style={[
-                  styles.button,
-                  {
-                    borderColor: action.style === 'destructive'
-                      ? theme.error
-                      : action.style === 'cancel'
-                      ? theme.muted
-                      : theme.accent,
-                  }
-                ]}
-                onPress={() => {
-                  action.onPress();
-                  onDismiss();
-                }}
-              >
-                <Text
-                  style={[
-                    styles.buttonText,
-                    {
-                      color: action.style === 'destructive'
-                        ? theme.error
-                        : action.style === 'cancel'
-                        ? theme.muted
-                        : theme.accent,
-                    }
-                  ]}
+              <React.Fragment key={index}>
+                {index > 0 && (
+                  <Text style={[styles.separator, { color: theme.muted }]}>|</Text>
+                )}
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => {
+                    action.onPress();
+                    onDismiss();
+                  }}
                 >
-                  {action.text}
-                </Text>
-              </TouchableOpacity>
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      {
+                        color: action.style === 'destructive'
+                          ? theme.error
+                          : action.style === 'cancel'
+                          ? theme.muted
+                          : theme.accent,
+                      }
+                    ]}
+                  >
+                    {action.text.toLowerCase()}
+                  </Text>
+                </TouchableOpacity>
+              </React.Fragment>
             ))}
           </View>
         </View>
@@ -105,51 +100,48 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 16,
   },
   modalContent: {
     width: "100%",
     maxWidth: 500,
-    borderRadius: 8,
     borderWidth: 1,
   },
   header: {
     borderBottomWidth: 1,
-    padding: 20,
+    padding: 12,
   },
   title: {
     fontFamily: "monospace",
-    fontSize: 20,
-    textAlign: "center",
-    letterSpacing: 2,
+    fontSize: 14,
+    textAlign: "left",
+    letterSpacing: 1,
   },
   messageContainer: {
-    padding: 20,
+    padding: 12,
   },
   message: {
     fontFamily: "monospace",
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: "center",
+    fontSize: 13,
+    lineHeight: 18,
   },
   actions: {
     flexDirection: "row",
-    justifyContent: "center",
-    gap: 12,
-    padding: 20,
-    paddingTop: 0,
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
   },
   button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-    minWidth: 100,
-    alignItems: "center",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
   },
   buttonText: {
     fontFamily: "monospace",
-    fontSize: 14,
-    letterSpacing: 0.5,
+    fontSize: 13,
+  },
+  separator: {
+    fontFamily: "monospace",
+    fontSize: 13,
   },
 }); 

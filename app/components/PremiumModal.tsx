@@ -21,9 +21,6 @@ export default function PremiumModal({
   visible,
   onClose,
   theme,
-  onUpgrade,
-  isPremium,
-  isUpgrading,
 }: PremiumModalProps) {
   return (
     <Modal
@@ -42,49 +39,54 @@ export default function PremiumModal({
         ]}>
           <View style={[styles.header, { borderBottomColor: theme.border }]}>
             <Text style={[styles.title, { color: theme.accent }]}>
-              PRO FEATURES
+              $ todo pro
             </Text>
           </View>
 
           <View style={styles.content}>
             <Text style={[styles.message, { color: theme.foreground }]}>
-              Pro subscriptions coming soon! Here's what you'll get:
+              $ echo "coming soon..."
             </Text>
 
             <View style={styles.featureList}>
               <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Task Due Dates & Reminders
+                $ features --list
               </Text>
-              <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Recurring Tasks
+              <Text style={[styles.feature, { color: theme.muted }]}>
+                {'>>'} due dates, reminders
               </Text>
-              <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Advanced Task Analytics
+              <Text style={[styles.feature, { color: theme.muted }]}>
+                {'>>'} recurring tasks
               </Text>
-              <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Task Notes & Attachments
+              <Text style={[styles.feature, { color: theme.muted }]}>
+                {'>>'} analytics dashboard
               </Text>
-              <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Subtasks & Dependencies
+              <Text style={[styles.feature, { color: theme.muted }]}>
+                {'>>'} notes, attachments
               </Text>
-              <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Custom Task Labels
+              <Text style={[styles.feature, { color: theme.muted }]}>
+                {'>>'} subtasks, dependencies
               </Text>
-              <Text style={[styles.feature, { color: theme.foreground }]}>
-                • Task Export & Cloud Backup
+              <Text style={[styles.feature, { color: theme.muted }]}>
+                {'>>'} custom labels
               </Text>
-              <Text style={[styles.feature, { color: theme.foreground }]}>
-                • More themes and colors
+              <Text style={[styles.feature, { color: theme.muted }]}>
+                {'>>'} cloud backup
+              </Text>
+              <Text style={[styles.feature, { color: theme.muted }]}>
+                {'>>'} theme customization
               </Text>
             </View>
 
             <View style={styles.pricing}>
+              <Text style={[styles.feature, { color: theme.foreground }]}>
+                $ price --info
+              </Text>
               <Text style={[styles.priceTag, { color: theme.accent }]}>
-                {/* ;) */}
-                $1.99/month (or less)
+                {'>>'} $1.99/month (or less)
               </Text>
               <Text style={[styles.priceNote, { color: theme.muted }]}>
-                Available soon
+                {'>>'} launching soon...
               </Text>
             </View>
           </View>
@@ -95,7 +97,7 @@ export default function PremiumModal({
               onPress={onClose}
             >
               <Text style={[styles.buttonText, { color: theme.muted }]}>
-                close
+                $ exit
               </Text>
             </TouchableOpacity>
           </View>
@@ -110,73 +112,64 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 16,
   },
   modalContent: {
     width: "100%",
     maxWidth: 500,
-    borderRadius: 8,
     borderWidth: 1,
   },
   header: {
     borderBottomWidth: 1,
-    padding: 20,
+    padding: 12,
   },
   title: {
     fontFamily: "monospace",
-    fontSize: 20,
+    fontSize: 16,
     textAlign: "center",
-    letterSpacing: 2,
+    letterSpacing: 1,
   },
   content: {
-    padding: 20,
+    padding: 16,
   },
   message: {
     fontFamily: "monospace",
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 20,
-    textAlign: "center",
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 16,
   },
   featureList: {
-    marginBottom: 24,
+    marginBottom: 20,
   },
   feature: {
     fontFamily: "monospace",
-    fontSize: 14,
-    lineHeight: 24,
+    fontSize: 13,
+    lineHeight: 20,
   },
   pricing: {
-    alignItems: "center",
+    marginTop: 8,
   },
   priceTag: {
     fontFamily: "monospace",
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 8,
+    fontSize: 13,
+    marginBottom: 4,
   },
   priceNote: {
     fontFamily: "monospace",
     fontSize: 12,
   },
   footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 12,
-    padding: 20,
+    padding: 12,
     paddingTop: 0,
   },
   button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderWidth: 1,
-    minWidth: 100,
-    alignItems: "center",
+    alignSelf: 'center',
   },
   buttonText: {
     fontFamily: "monospace",
-    fontSize: 14,
-    letterSpacing: 0.5,
+    fontSize: 13,
   },
-}); 
+});

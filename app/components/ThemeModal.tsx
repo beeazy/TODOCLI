@@ -1,11 +1,11 @@
 import React from 'react';
 import {
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Theme } from '../types';
 
@@ -104,7 +104,7 @@ export default function ThemeModal({
         ]}>
           <View style={[styles.header, { borderBottomColor: theme.border }]}>
             <Text style={[styles.title, { color: theme.accent }]}>
-              SELECT THEME
+              $ theme --list
             </Text>
           </View>
 
@@ -115,9 +115,9 @@ export default function ThemeModal({
                 style={[
                   styles.themeButton,
                   {
-                    backgroundColor: themeOption.background,
-                    borderColor: key === currentTheme ? themeOption.accent : themeOption.border,
-                    borderWidth: key === currentTheme ? 2 : 1,
+                    backgroundColor: 'transparent',
+                    borderColor: key === currentTheme ? themeOption.accent : 'transparent',
+                    borderLeftWidth: key === currentTheme ? 2 : 0,
                   }
                 ]}
                 onPress={() => {
@@ -125,13 +125,16 @@ export default function ThemeModal({
                   onClose();
                 }}
               >
-                <Text style={[styles.themeName, { color: themeOption.accent }]}>
-                  {themeOption.name}
+                <Text style={[styles.themeName, { 
+                  color: key === currentTheme ? themeOption.accent : theme.foreground,
+                  marginLeft: key === currentTheme ? 8 : 10,
+                }]}>
+                  {key === currentTheme ? '>' : ' '} {themeOption.name}
                 </Text>
                 <View style={styles.themePreview}>
-                  <View style={[styles.previewBox, { backgroundColor: themeOption.accent }]} />
-                  <View style={[styles.previewBox, { backgroundColor: themeOption.success }]} />
-                  <View style={[styles.previewBox, { backgroundColor: themeOption.error }]} />
+                  <Text style={[styles.previewText, { color: themeOption.accent }]}>■</Text>
+                  <Text style={[styles.previewText, { color: themeOption.success }]}>■</Text>
+                  <Text style={[styles.previewText, { color: themeOption.error }]}>■</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -139,11 +142,11 @@ export default function ThemeModal({
 
           <View style={styles.footer}>
             <TouchableOpacity
-              style={[styles.button, { borderColor: theme.accent }]}
+              style={[styles.button, { borderColor: theme.muted }]}
               onPress={onClose}
             >
-              <Text style={[styles.buttonText, { color: theme.accent }]}>
-                Close
+              <Text style={[styles.buttonText, { color: theme.muted }]}>
+                $ exit
               </Text>
             </TouchableOpacity>
           </View>
@@ -158,63 +161,58 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 16,
   },
   modalContent: {
     width: "100%",
     maxWidth: 500,
-    borderRadius: 8,
     borderWidth: 1,
     maxHeight: "90%",
   },
   header: {
     borderBottomWidth: 1,
-    padding: 20,
+    padding: 12,
   },
   title: {
     fontFamily: "monospace",
-    fontSize: 20,
-    textAlign: "center",
-    letterSpacing: 2,
+    fontSize: 14,
+    textAlign: "left",
+    letterSpacing: 1,
   },
   themeList: {
-    padding: 20,
+    padding: 12,
   },
   themeButton: {
-    padding: 16,
-    borderRadius: 6,
-    marginBottom: 12,
-    borderWidth: 1,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 4,
   },
   themeName: {
     fontFamily: "monospace",
-    fontSize: 16,
-    marginBottom: 12,
+    fontSize: 13,
+    marginBottom: 6,
   },
   themePreview: {
     flexDirection: "row",
-    gap: 8,
+    gap: 4,
+    marginLeft: 16,
   },
-  previewBox: {
-    width: 24,
-    height: 24,
-    borderRadius: 4,
+  previewText: {
+    fontFamily: "monospace",
+    fontSize: 16,
   },
   footer: {
-    padding: 20,
-    alignItems: "center",
+    padding: 12,
+    alignItems: "flex-start",
+    paddingLeft: 24,
   },
   button: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-    minWidth: 100,
-    alignItems: "center",
+    paddingVertical: 4,
+    paddingHorizontal: 0,
+    borderWidth: 0,
   },
   buttonText: {
     fontFamily: "monospace",
-    fontSize: 14,
-    letterSpacing: 0.5,
+    fontSize: 13,
   },
 }); 

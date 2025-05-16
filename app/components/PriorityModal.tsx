@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Theme } from '../types';
 
@@ -16,10 +16,10 @@ interface PriorityOption {
 }
 
 const PRIORITY_OPTIONS: PriorityOption[] = [
-  { value: 'P0', label: 'P0', color: '#FF453A', description: 'Critical - Urgent tasks that need immediate attention' },
-  { value: 'P1', label: 'P1', color: '#FF9F0A', description: 'High - Important tasks to be done soon' },
-  { value: 'P2', label: 'P2', color: '#32D74B', description: 'Medium - Tasks to be done this week' },
-  { value: 'P3', label: 'P3', color: '#64D2FF', description: 'Low - Nice to have tasks' },
+  { value: 'P0', label: 'p0', color: '#FF453A', description: 'critical - urgent tasks that need immediate attention' },
+  { value: 'P1', label: 'p1', color: '#FF9F0A', description: 'high - important tasks to be done soon' },
+  { value: 'P2', label: 'p2', color: '#32D74B', description: 'medium - tasks to be done this week' },
+  { value: 'P3', label: 'p3', color: '#64D2FF', description: 'low - nice to have tasks' },
 ];
 
 interface PriorityModalProps {
@@ -53,8 +53,8 @@ export default function PriorityModal({
           }
         ]}>
           <View style={[styles.header, { borderBottomColor: theme.border }]}>
-            <Text style={[styles.title, { color: theme.accent }]}>
-              SELECT PRIORITY
+            <Text style={[styles.title, { color: theme.foreground }]}>
+              $ priority --set
             </Text>
           </View>
 
@@ -65,8 +65,9 @@ export default function PriorityModal({
                 style={[
                   styles.optionButton,
                   {
-                    borderColor: option.color,
-                    backgroundColor: currentPriority === option.value ? option.color : 'transparent',
+                    borderLeftColor: option.color,
+                    borderLeftWidth: currentPriority === option.value ? 2 : 0,
+                    backgroundColor: currentPriority === option.value ? 'rgba(0, 0, 0, 0.2)' : 'transparent',
                   }
                 ]}
                 onPress={() => {
@@ -78,16 +79,18 @@ export default function PriorityModal({
                   <Text style={[
                     styles.optionLabel,
                     {
-                      color: currentPriority === option.value ? theme.surface : option.color,
-                      fontWeight: currentPriority === option.value ? '600' : 'normal',
+                      color: currentPriority === option.value ? theme.foreground : option.color,
+                      marginLeft: currentPriority === option.value ? 10 : 12,
                     }
                   ]}>
-                    {option.label}
+                    {currentPriority === option.value ? '>' : ' '} {option.label}
                   </Text>
                   <Text style={[
                     styles.optionDescription,
                     {
-                      color: currentPriority === option.value ? theme.surface : theme.muted,
+                      color: currentPriority === option.value ? theme.foreground : theme.muted,
+                      opacity: currentPriority === option.value ? 0.9 : 0.7,
+                      marginLeft: currentPriority === option.value ? 22 : 24,
                     }
                   ]}>
                     {option.description}
@@ -99,11 +102,11 @@ export default function PriorityModal({
 
           <View style={styles.footer}>
             <TouchableOpacity
-              style={[styles.cancelButton, { borderColor: theme.muted }]}
+              style={styles.cancelButton}
               onPress={onClose}
             >
-              <Text style={[styles.cancelButtonText, { color: theme.muted }]}>
-                Cancel
+              <Text style={[styles.cancelButtonText, { color: theme.foreground, opacity: 0.7 }]}>
+                $ exit
               </Text>
             </TouchableOpacity>
           </View>
@@ -118,63 +121,52 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20,
+    padding: 16,
   },
   modalContent: {
     width: "100%",
     maxWidth: 500,
-    borderRadius: 8,
     borderWidth: 1,
   },
   header: {
     borderBottomWidth: 1,
-    padding: 20,
+    padding: 12,
   },
   title: {
     fontFamily: "monospace",
-    fontSize: 20,
-    textAlign: "center",
-    letterSpacing: 2,
+    fontSize: 14,
+    textAlign: "left",
+    letterSpacing: 1,
   },
   optionsContainer: {
-    padding: 20,
-    gap: 12,
+    padding: 12,
+    gap: 4,
   },
   optionButton: {
-    borderWidth: 1,
-    borderRadius: 6,
     overflow: 'hidden',
   },
   optionContent: {
-    padding: 16,
+    paddingVertical: 8,
   },
   optionLabel: {
     fontFamily: "monospace",
-    fontSize: 16,
-    marginBottom: 4,
-    letterSpacing: 1,
+    fontSize: 13,
+    marginBottom: 2,
   },
   optionDescription: {
     fontFamily: "monospace",
     fontSize: 13,
-    letterSpacing: 0.5,
   },
   footer: {
-    padding: 20,
-    paddingTop: 0,
-    alignItems: 'center',
+    padding: 12,
+    alignItems: 'flex-start',
+    paddingLeft: 24,
   },
   cancelButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 4,
-    borderWidth: 1,
-    minWidth: 100,
-    alignItems: "center",
+    paddingVertical: 4,
   },
   cancelButtonText: {
     fontFamily: "monospace",
-    fontSize: 14,
-    letterSpacing: 0.5,
+    fontSize: 13,
   },
 }); 
