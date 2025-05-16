@@ -692,10 +692,16 @@ export default function TasksScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea]}>
+    <SafeAreaView style={[
+      styles.safeArea,
+      { backgroundColor: theme.background }
+    ]}>
       <StatusBar barStyle="light-content" />
       <KeyboardAvoidingView
-        style={[styles.container]}
+        style={[
+          styles.container,
+          { backgroundColor: theme.background }
+        ]}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <TabBar
