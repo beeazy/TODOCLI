@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import OnboardingScreen from './components/OnboardingScreen';
 import PremiumModal from './components/PremiumModal';
 import TabBar from './components/TabBar';
 import TaskItem from './components/TaskItem';
@@ -340,6 +341,33 @@ function generateUniqueTabName(existingTabs: Tab[], baseName: string): string {
   return "Tab";
 }
 
+// Add TypingText component at the top level
+const TypingText = ({ text, style, onComplete }: { text: string; style: any; onComplete?: () => void }) => {
+  const [displayText, setDisplayText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const typingSpeed = 50; // ms per character
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timer = setTimeout(() => {
+        setDisplayText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, typingSpeed);
+
+      return () => clearTimeout(timer);
+    } else if (onComplete) {
+      onComplete();
+    }
+  }, [currentIndex, text, onComplete]);
+
+  return (
+    <Text style={style}>
+      {displayText}
+      <Text style={[style, { opacity: 0.5 }]}>_</Text>
+    </Text>
+  );
+};
+
 export default function TasksScreen() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState("");
@@ -356,6 +384,7 @@ export default function TasksScreen() {
   const [tabToClose, setTabToClose] = useState<Tab | null>(null);
   const [isDeleteTaskAlertVisible, setIsDeleteTaskAlertVisible] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
+  const [showOnboarding, setShowOnboarding] = useState(true);
 
   const PRIORITY_ORDER: Task['priority'][] = ['P0', 'P1', 'P2', 'P3'];
 
@@ -385,6 +414,7 @@ export default function TasksScreen() {
     loadTasks();
     loadTheme();
     loadPremiumStatus();
+    checkFirstLaunch();
   }, []);
 
   const loadTabs = async () => {
@@ -791,6 +821,30 @@ export default function TasksScreen() {
     analytics.trackModalClosed('premium');
     setIsPremiumModalVisible(false);
   };
+
+  const checkFirstLaunch = async () => {
+    try {
+      const hasLaunched = await AsyncStorage.getItem('@terminal_todo_has_launched');
+      if (hasLaunched) {
+        setShowOnboarding(false);
+      }
+    } catch (error) {
+      console.error('Error checking first launch:', error);
+    }
+  };
+
+  const handleOnboardingComplete = async () => {
+    try {
+      await AsyncStorage.setItem('@terminal_todo_has_launched', 'true');
+      setShowOnboarding(false);
+    } catch (error) {
+      console.error('Error saving launch status:', error);
+    }
+  };
+
+  if (showOnboarding) {
+    return <OnboardingScreen onComplete={handleOnboardingComplete} theme={themes[currentTheme]} />;
+  }
 
   return (
     <SafeAreaView style={[
