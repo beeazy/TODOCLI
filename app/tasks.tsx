@@ -14,12 +14,14 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import LegalModal from './components/LegalModal';
 import OnboardingScreen from './components/OnboardingScreen';
 import PremiumModal from './components/PremiumModal';
 import TabBar from './components/TabBar';
 import TaskItem from './components/TaskItem';
 import ThemeModal, { themes } from './components/ThemeModal';
 import ThemedAlert from './components/ThemedAlert';
+import { PRIVACY_POLICY, TERMS_OF_SERVICE } from './constants/legal';
 import { analytics } from './services/analytics';
 import { Theme } from './types';
 
@@ -221,8 +223,8 @@ const EditModal = ({ visible, onClose, onSave, initialValue, title, theme, isPro
 
   const handleSave = () => {
     const trimmedValue = value.trim();
-    if (isProject && trimmedValue === '') {
-      setError('Project name cannot be empty');
+    if (!trimmedValue) {
+      setError('Task cannot be empty');
       return;
     }
     setError(null);
@@ -275,6 +277,8 @@ const EditModal = ({ visible, onClose, onSave, initialValue, title, theme, isPro
                 placeholderTextColor={theme.muted}
                 autoFocus
                 selectionColor={theme.accent}
+                returnKeyType="done"
+                onSubmitEditing={handleSave}
               />
             </View>
             {error && (
@@ -289,8 +293,10 @@ const EditModal = ({ visible, onClose, onSave, initialValue, title, theme, isPro
               style={[styles.button, { 
                 backgroundColor: theme.accent,
                 borderColor: theme.accent,
+                opacity: !value.trim() ? 0.5 : 1
               }]}
               onPress={handleSave}
+              disabled={!value.trim()}
             >
               <Text style={[styles.buttonText, { color: theme.background }]}>
                 Save
@@ -385,6 +391,8 @@ export default function TasksScreen() {
   const [isDeleteTaskAlertVisible, setIsDeleteTaskAlertVisible] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(true);
+  const [isPrivacyModalVisible, setIsPrivacyModalVisible] = useState(false);
+  const [isTermsModalVisible, setIsTermsModalVisible] = useState(false);
 
   const PRIORITY_ORDER: Task['priority'][] = ['P0', 'P1', 'P2', 'P3'];
 
@@ -787,8 +795,12 @@ export default function TasksScreen() {
   };
 
   const handleAddTaskSubmit = (taskText: string) => {
+    const trimmedText = taskText.trim();
+    if (!trimmedText) {
+      return; // Don't add empty tasks
+    }
     analytics.trackInputSubmit('add_task', 'task_input');
-    addTask(taskText);
+    addTask(trimmedText);
     setNewTask("");
     setIsAddingTask(false);
   };
@@ -805,9 +817,13 @@ export default function TasksScreen() {
   };
 
   const handleEditModalSave = (newText: string) => {
+    const trimmedText = newText.trim();
+    if (!trimmedText) {
+      return; // Don't save empty tasks
+    }
     if (editingTask) {
       analytics.trackModalAction('edit_task', 'save');
-      updateTask(editingTask.id, newText);
+      updateTask(editingTask.id, trimmedText);
       setEditingTask(null);
     }
   };
@@ -917,8 +933,11 @@ export default function TasksScreen() {
             </View>
             <View style={styles.buttonRow}>
               <TouchableOpacity
-                style={styles.button}
+                style={[styles.button, { 
+                  opacity: !newTask.trim() ? 0.5 : 1 
+                }]}
                 onPress={() => handleAddTaskSubmit(newTask)}
+                disabled={!newTask.trim()}
               >
                 <Text style={[styles.buttonText, { color: theme.accent }]}>
                   add
@@ -988,6 +1007,8 @@ export default function TasksScreen() {
           onUpgrade={handleUpgrade}
           isPremium={isPremium}
           isUpgrading={isUpgrading}
+          onShowPrivacy={() => setIsPrivacyModalVisible(true)}
+          onShowTerms={() => setIsTermsModalVisible(true)}
         />
 
         <ThemedAlert
@@ -1037,6 +1058,22 @@ export default function TasksScreen() {
               onPress: handleDeleteTask
             }
           ]}
+        />
+
+        <LegalModal
+          visible={isPrivacyModalVisible}
+          onClose={() => setIsPrivacyModalVisible(false)}
+          title="Privacy Policy"
+          content={PRIVACY_POLICY}
+          theme={theme}
+        />
+
+        <LegalModal
+          visible={isTermsModalVisible}
+          onClose={() => setIsTermsModalVisible(false)}
+          title="Terms of Service"
+          content={TERMS_OF_SERVICE}
+          theme={theme}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>

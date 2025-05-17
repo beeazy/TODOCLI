@@ -15,13 +15,20 @@ interface PremiumModalProps {
   onUpgrade: () => void;
   isPremium: boolean;
   isUpgrading: boolean;
+  onShowPrivacy?: () => void;
+  onShowTerms?: () => void;
 }
 
-export default function PremiumModal({
-  visible,
-  onClose,
-  theme,
-}: PremiumModalProps) {
+const PremiumModal = ({ 
+  visible, 
+  onClose, 
+  theme, 
+  onUpgrade, 
+  isPremium, 
+  isUpgrading,
+  onShowPrivacy,
+  onShowTerms 
+}: PremiumModalProps) => {
   return (
     <Modal
       visible={visible}
@@ -32,14 +39,19 @@ export default function PremiumModal({
       <View style={[styles.modalOverlay, { backgroundColor: "rgba(0, 0, 0, 0.95)" }]}>
         <View style={[
           styles.modalContent,
-          {
+          { 
             backgroundColor: theme.surface,
             borderColor: theme.accent,
+            shadowColor: theme.accent,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.3,
+            shadowRadius: 8,
+            elevation: 5
           }
         ]}>
           <View style={[styles.header, { borderBottomColor: theme.border }]}>
             <Text style={[styles.title, { color: theme.accent }]}>
-              $ todo pro
+              {isPremium ? "PRO FEATURES" : "UPGRADE TO PRO"}
             </Text>
           </View>
 
@@ -91,13 +103,35 @@ export default function PremiumModal({
             </View>
           </View>
 
-          <View style={styles.footer}>
+          <View style={[styles.footer, { borderTopColor: theme.border }]}>
+            <View style={styles.legalLinks}>
+              <TouchableOpacity
+                style={styles.legalLink}
+                onPress={onShowPrivacy}
+              >
+                <Text style={[styles.legalLinkText, { color: theme.accent }]}>
+                  Privacy Policy
+                </Text>
+              </TouchableOpacity>
+              <Text style={[styles.legalLinkText, { color: theme.muted }]}>•</Text>
+              <TouchableOpacity
+                style={styles.legalLink}
+                onPress={onShowTerms}
+              >
+                <Text style={[styles.legalLinkText, { color: theme.accent }]}>
+                  Terms of Service
+                </Text>
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity
-              style={[styles.button, { borderColor: theme.muted }]}
+              style={[styles.button, { 
+                backgroundColor: theme.accent,
+                borderColor: theme.accent,
+              }]}
               onPress={onClose}
             >
-              <Text style={[styles.buttonText, { color: theme.muted }]}>
-                $ exit
+              <Text style={[styles.buttonText, { color: theme.background }]}>
+                Close
               </Text>
             </TouchableOpacity>
           </View>
@@ -105,7 +139,7 @@ export default function PremiumModal({
       </View>
     </Modal>
   );
-}
+};
 
 const styles = StyleSheet.create({
   modalOverlay: {
@@ -172,4 +206,22 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
     fontSize: 13,
   },
+  legalLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  legalLink: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  legalLinkText: {
+    fontFamily: "monospace",
+    fontSize: 12,
+    letterSpacing: 0.5,
+  },
 });
+
+export default PremiumModal;

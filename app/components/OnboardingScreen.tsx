@@ -44,11 +44,11 @@ const OnboardingScreen = ({ onComplete, theme }: OnboardingScreenProps) => {
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   const messages = [
-    "Welcome to Terminal Todo",
+    "👋 Welcome to T-Check",
     "A terminal-inspired task manager",
     "Use tabs to organize your tasks",
     "Set priorities with P0-P3",
-    "Ready to get started?",
+    "All set. Let's get things done ⚡",
   ];
 
   useEffect(() => {
@@ -90,7 +90,7 @@ const OnboardingScreen = ({ onComplete, theme }: OnboardingScreenProps) => {
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={[styles.title, { color: theme.accent }]}>
-            $ terminal-todo
+            T✓ task manager
           </Text>
         </View>
 
