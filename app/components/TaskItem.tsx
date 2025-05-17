@@ -112,7 +112,7 @@ export default function TaskItem({
           <Text style={[styles.actionButtonText, { 
             color: item.priority ? PRIORITIES[item.priority].color : theme.muted 
           }]}>
-            pri
+            {item.priority ? PRIORITIES[item.priority].label : 'P?'}
           </Text>
         </TouchableOpacity>
         <Text style={[styles.separator, { color: theme.muted }]}>|</Text>
@@ -130,7 +130,7 @@ export default function TaskItem({
           onPress={handleDelete}
         >
           <Text style={[styles.actionButtonText, { color: theme.error }]}>
-            del
+            rm
           </Text>
         </TouchableOpacity>
       </View>

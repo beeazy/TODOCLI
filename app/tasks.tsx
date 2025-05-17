@@ -700,7 +700,14 @@ export default function TasksScreen() {
     setIsDeleteTaskAlertVisible(true);
   };
 
+  const handleTaskEdit = (task: Task) => {
+    if (task.completed) return; 
+  };
+
   const onPriorityChange = async (taskId: string, newPriority: Task['priority']) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || task.completed) return; 
+    
     const updatedTasks = sortTasksByPriority(
       tasks.map(task => {
         if (task.id === taskId) {
@@ -744,10 +751,6 @@ export default function TasksScreen() {
     } finally {
       setIsUpgrading(false);
     }
-  };
-
-  const handleTaskEdit = (task: Task) => {
-    setEditingTask(task);
   };
 
   const saveTheme = async (themeName: string) => {
