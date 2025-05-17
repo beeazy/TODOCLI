@@ -49,3 +49,6 @@ ARTICLE.md
 
 # .env
 .env
+
+# cleanup
+cleanup-git.sh
