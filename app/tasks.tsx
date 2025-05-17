@@ -393,12 +393,24 @@ export default function TasksScreen() {
       if (storedTabs) {
         const parsedTabs = JSON.parse(storedTabs);
         setTabs(parsedTabs);
-        if (!parsedTabs.find((tab: Tab) => tab.id === activeTab)) {
+        // Always set the first tab as active if no tab is selected
+        if (!activeTab || !parsedTabs.find((tab: Tab) => tab.id === activeTab)) {
           setActiveTab(parsedTabs[0].id);
         }
+      } else {
+        // If no tabs exist in storage, create a default tab and set it as active
+        const defaultTab = { id: generateUniqueId(), title: 'Main' };
+        setTabs([defaultTab]);
+        setActiveTab(defaultTab.id);
+        await saveTabs([defaultTab]);
       }
     } catch (error) {
       console.error('Error loading tabs:', error);
+      // Handle error by creating a default tab
+      const defaultTab = { id: generateUniqueId(), title: 'Main' };
+      setTabs([defaultTab]);
+      setActiveTab(defaultTab.id);
+      await saveTabs([defaultTab]);
     }
   };
 
@@ -504,6 +516,14 @@ export default function TasksScreen() {
   };
 
   const addTask = async (taskText: string) => {
+    // Ensure we have an active tab
+    if (!activeTab) {
+      const defaultTab = { id: generateUniqueId(), title: 'Main' };
+      setTabs([defaultTab]);
+      setActiveTab(defaultTab.id);
+      await saveTabs([defaultTab]);
+    }
+
     const newTask: Task = {
       id: generateUniqueId(),
       text: taskText,
@@ -635,10 +655,11 @@ export default function TasksScreen() {
   };
 
   const deleteTask = async (taskId: string) => {
-    const updatedTasks = tasks.filter(task => task.id !== taskId);
-    setTasks(updatedTasks);
-    await saveTasks(updatedTasks);
-    analytics.trackTaskDeleted(taskId, activeTab);
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    setTaskToDelete(task);
+    setIsDeleteTaskAlertVisible(true);
   };
 
   const onPriorityChange = async (taskId: string, newPriority: Task['priority']) => {
@@ -708,7 +729,12 @@ export default function TasksScreen() {
 
   const handleDeleteTask = async () => {
     if (!taskToDelete) return;
-    await deleteTask(taskToDelete.id);
+    
+    const updatedTasks = tasks.filter(task => task.id !== taskToDelete.id);
+    setTasks(updatedTasks);
+    await saveTasks(updatedTasks);
+    analytics.trackTaskDeleted(taskToDelete.id, activeTab);
+    
     setIsDeleteTaskAlertVisible(false);
     setTaskToDelete(null);
   };
@@ -938,7 +964,7 @@ export default function TasksScreen() {
 
         <ThemedAlert
           visible={isDeleteTaskAlertVisible}
-          title="Delete Task"
+          title="rm -rf task"
           message={taskToDelete ? `Are you sure you want to delete "${taskToDelete.text}"?` : ''}
           theme={theme}
           onDismiss={() => setIsDeleteTaskAlertVisible(false)}
