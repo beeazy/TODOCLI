@@ -701,7 +701,8 @@ export default function TasksScreen() {
   };
 
   const handleTaskEdit = (task: Task) => {
-    if (task.completed) return; 
+    if (task.completed) return;
+    setEditingTask(task);
   };
 
   const onPriorityChange = async (taskId: string, newPriority: Task['priority']) => {
