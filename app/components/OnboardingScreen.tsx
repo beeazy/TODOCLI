@@ -41,7 +41,6 @@ const TypingText = ({ text, style, onComplete }: { text: string; style: any; onC
 
 const OnboardingScreen = ({ onComplete, theme }: OnboardingScreenProps) => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [showCursor, setShowCursor] = useState(true);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   const messages = [
