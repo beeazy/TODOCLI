@@ -44,14 +44,14 @@ export default {
       edgeToEdgeEnabled: true,
       package: BUNDLE_ID,
       navigationBar: {
-        backgroundColor: '#000000',
+        backgroundColor: '#0f1211',
         barStyle: 'light-content',
       },
       splash: {
         image: './assets/images/splash-icon.png',
         imageWidth: 200,
         resizeMode: 'contain',
-        backgroundColor: '#000000',
+        backgroundColor: '#0f1211',
       },
     },
 
@@ -60,8 +60,8 @@ export default {
       bundler: 'metro',
       output: 'static',
       favicon: './assets/images/icon.png',
-      themeColor: '#000000',
-      backgroundColor: '#000000',
+      themeColor: '#0f1211',
+      backgroundColor: '#0f1211',
     },
 
     // Updates configuration
@@ -79,7 +79,7 @@ export default {
           image: './assets/images/splash-icon.png',
           imageWidth: 200,
           resizeMode: 'contain',
-          backgroundColor: '#000000',
+          backgroundColor: '#0f1211',
         },
       ],
     ],

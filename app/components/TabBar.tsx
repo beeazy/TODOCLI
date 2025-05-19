@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { Theme } from '../types';
 
@@ -31,7 +31,7 @@ export default function TabBar({
   theme,
 }: TabBarProps) {
   return (
-    <View style={[styles.container, { borderBottomColor: theme.border }]}>
+    <View style={[styles.container, { backgroundColor: theme.surface }]}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -39,39 +39,41 @@ export default function TabBar({
         contentContainerStyle={styles.scrollContent}
       >
         {tabs.map((tab) => (
-          <View key={tab.id} style={styles.tabWrapper}>
-            <TouchableOpacity
+          <TouchableOpacity
+            key={tab.id}
+            style={[
+              styles.tab,
+              activeTab === tab.id && { backgroundColor: theme.surface },
+              { borderColor: theme.border }
+            ]}
+            onPress={() => onTabPress(tab.id)}
+          >
+            <Text
               style={[
-                styles.tab,
-                activeTab === tab.id && { backgroundColor: theme.surface },
-                { borderColor: theme.border }
+                styles.tabText,
+                { color: activeTab === tab.id ? theme.accent : theme.muted }
               ]}
-              onPress={() => onTabPress(tab.id)}
             >
-              <Text
-                style={[
-                  styles.tabText,
-                  { color: activeTab === tab.id ? theme.accent : theme.muted }
-                ]}
-              >
-                {tab.title}
-              </Text>
-            </TouchableOpacity>
+              {tab.title}
+            </Text>
             {tabs.length > 1 && (
               <TouchableOpacity
-                style={[styles.closeButton, { borderColor: theme.error }]}
-                onPress={() => onCloseTab(tab.id)}
+                style={styles.closeButton}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  onCloseTab(tab.id);
+                }}
               >
                 <Text style={[styles.closeButtonText, { color: theme.error }]}>×</Text>
               </TouchableOpacity>
             )}
-          </View>
+          </TouchableOpacity>
         ))}
         <TouchableOpacity
-          style={[styles.addButton, { borderColor: theme.accent }]}
+          style={[styles.addTabButton, { borderColor: theme.border }]}
           onPress={onAddTab}
         >
-          <Text style={[styles.addButtonText, { color: theme.accent }]}>+</Text>
+          <Text style={[styles.addTabButtonText, { color: theme.accent }]}>+</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -93,11 +95,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  tabWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 4,
-  },
   tab: {
     paddingVertical: 6,
     paddingHorizontal: 12,
@@ -105,26 +102,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
   tabText: {
     fontFamily: 'monospace',
     fontSize: 14,
   },
   closeButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 1,
+    width: 16,
+    height: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 4,
+    marginLeft: 2,
   },
   closeButtonText: {
-    fontSize: 16,
-    lineHeight: 18,
-    marginTop: -2,
+    fontSize: 14,
+    lineHeight: 14,
+    marginTop: -1,
   },
-  addButton: {
+  addTabButton: {
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -132,7 +128,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addButtonText: {
+  addTabButtonText: {
     fontSize: 20,
     lineHeight: 22,
     marginTop: -2,

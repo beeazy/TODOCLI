@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   StyleSheet,
@@ -50,8 +50,26 @@ export default function TaskItem({
   isPremium,
 }: TaskItemProps) {
   const [isPriorityModalVisible, setIsPriorityModalVisible] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const opacityAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (item.completed) {
+      // Just fade to 50% opacity when completed
+      Animated.timing(fadeAnim, {
+        toValue: 0.5,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else {
+      // Fade back to full opacity when uncompleted
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [item.completed]);
 
   const handleToggle = () => {
     analytics.trackButtonClick('toggle_task', `task_${item.id}`);
@@ -87,8 +105,8 @@ export default function TaskItem({
       style={[
         styles.container,
         {
-          opacity: opacityAnim,
-          transform: [{ scale: scaleAnim }],
+          opacity: fadeAnim,
+          // transform: [{ scale: scaleAnim }],
           backgroundColor: 'transparent',
         },
       ]}
@@ -97,11 +115,11 @@ export default function TaskItem({
         <Text
           style={[
             styles.taskText,
-            { color: theme.foreground },
+            { color: theme.accent },
             item.completed && [styles.taskTextCompleted, { color: theme.muted }]
           ]}
         >
-          {item.completed ? "✓" : "·"} {item.priority ? `[${item.priority}]` : '[--]'} {item.text}
+          {item.text}
         </Text>
       </AnimatedTouchable>
       <View style={styles.actions}>
@@ -112,27 +130,27 @@ export default function TaskItem({
           <Text style={[styles.actionButtonText, { 
             color: item.priority ? PRIORITIES[item.priority].color : theme.muted 
           }]}>
-            {item.priority ? PRIORITIES[item.priority].label : 'P?'}
+            {item.priority ? PRIORITIES[item.priority].label.toLowerCase() : 'p?'}
           </Text>
         </TouchableOpacity>
-        <Text style={[styles.separator, { color: theme.muted }]}>|</Text>
-        <TouchableOpacity
+        {/* <Text style={[styles.separator, { color: theme.muted }]}>|</Text> */}
+        {/* <TouchableOpacity
           style={[styles.actionButton]}
           onPress={handleEdit}
         >
           <Text style={[styles.actionButtonText, { color: theme.accent }]}>
             edit
           </Text>
-        </TouchableOpacity>
-        <Text style={[styles.separator, { color: theme.muted }]}>|</Text>
-        <TouchableOpacity
+        </TouchableOpacity> */}
+        {/* <Text style={[styles.separator, { color: theme.muted }]}>|</Text> */}
+        {/* <TouchableOpacity
           style={[styles.actionButton]}
           onPress={handleDelete}
         >
           <Text style={[styles.actionButtonText, { color: theme.error }]}>
             rm
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <PriorityModal
@@ -164,6 +182,8 @@ const styles = StyleSheet.create({
     fontFamily: "monospace",
     fontSize: 14,
     lineHeight: 20,
+    // uppercase
+    textTransform: "uppercase",
   },
   taskTextCompleted: {
     textDecorationLine: "line-through",

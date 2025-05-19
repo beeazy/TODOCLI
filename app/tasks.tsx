@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
 import {
@@ -20,7 +21,6 @@ import PremiumModal from './components/PremiumModal';
 import TabBar from './components/TabBar';
 import TaskItem from './components/TaskItem';
 import ThemeModal, { themes } from './components/ThemeModal';
-import ThemedAlert from './components/ThemedAlert';
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from './constants/legal';
 import { analytics } from './services/analytics';
 import { Theme } from './types';
@@ -66,6 +66,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingVertical: 12,
     paddingHorizontal: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  progressBarContent: {
+    flex: 1,
   },
   progressBar: {
     flexDirection: "row",
@@ -77,6 +83,12 @@ const styles = StyleSheet.create({
     width: 16,
     height: 16,
     borderRadius: 2,
+    marginHorizontal: 2,
+    shadowColor: '#39FF14',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 8,
   },
   progressText: {
     fontFamily: "monospace",
@@ -117,6 +129,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     padding: 0,
     height: 24,
+    outlineWidth: 0,
   },
   buttonRow: {
     flexDirection: "row",
@@ -186,6 +199,16 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
     fontSize: 12,
     marginTop: 8,
+  },
+  themeButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    marginLeft: 8,
+  },
+  themeButtonText: {
+    fontFamily: "monospace",
+    fontSize: 13,
+    letterSpacing: 0.5,
   },
 });
 
@@ -386,10 +409,6 @@ export default function TasksScreen() {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [tabs, setTabs] = useState<Tab[]>([{ id: generateUniqueId(), title: 'Main' }]);
   const [activeTab, setActiveTab] = useState<string>('');
-  const [isCloseTabAlertVisible, setIsCloseTabAlertVisible] = useState(false);
-  const [tabToClose, setTabToClose] = useState<Tab | null>(null);
-  const [isDeleteTaskAlertVisible, setIsDeleteTaskAlertVisible] = useState(false);
-  const [taskToDelete, setTaskToDelete] = useState<Task | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const [isPrivacyModalVisible, setIsPrivacyModalVisible] = useState(false);
   const [isTermsModalVisible, setIsTermsModalVisible] = useState(false);
@@ -480,33 +499,23 @@ export default function TasksScreen() {
     const tab = tabs.find(tab => tab.id === tabId);
     if (!tab) return;
 
-    setTabToClose(tab);
-    setIsCloseTabAlertVisible(true);
-    await saveTabs(tabs.filter(t => t.id !== tabId));
-    analytics.trackTabDeleted(tabId);
-  };
-
-  const handleCloseTab = () => {
-    if (!tabToClose) return;
-
-    const updatedTabs = tabs.filter(tab => tab.id !== tabToClose.id);
+    const updatedTabs = tabs.filter(t => t.id !== tabId);
     setTabs(updatedTabs);
     
     // Move tasks from closed tab to first tab
     const updatedTasks = tasks.map(task => 
-      task.tabId === tabToClose.id ? { ...task, tabId: updatedTabs[0].id } : task
+      task.tabId === tabId ? { ...task, tabId: updatedTabs[0].id } : task
     );
     setTasks(updatedTasks);
     saveTasks(updatedTasks);
     
     // If closing active tab, switch to first available tab
-    if (activeTab === tabToClose.id) {
+    if (activeTab === tabId) {
       setActiveTab(updatedTabs[0].id);
     }
     
-    saveTabs(updatedTabs);
-    setIsCloseTabAlertVisible(false);
-    setTabToClose(null);
+    await saveTabs(updatedTabs);
+    analytics.trackTabDeleted(tabId);
   };
 
   const STORAGE_KEY = '@terminal_todo_app';
@@ -582,8 +591,27 @@ export default function TasksScreen() {
       }
       return task;
     });
+
+    // Get tasks for current tab
+    const currentTabTasks = updatedTasks.filter(task => task.tabId === activeTab);
+    const allTasksCompleted = currentTabTasks.length > 0 && currentTabTasks.every(task => task.completed);
+
+    if (allTasksCompleted) {
+      // If all tasks are completed, animate and delete them
+      const taskIds = currentTabTasks.map(task => task.id);
+      
+      // Wait for a short delay to show the completed state
+      setTimeout(async () => {
+        const finalTasks = updatedTasks.filter(task => !taskIds.includes(task.id));
+        setTasks(finalTasks);
+        await saveTasks(finalTasks);
+        taskIds.forEach(id => analytics.trackTaskDeleted(id, activeTab));
+      }, 1000); // 1 second delay to show completion
+    }
+
     setTasks(updatedTasks);
     await saveTasks(updatedTasks);
+    
     const task = updatedTasks.find(t => t.id === taskId);
     if (task) {
       analytics.trackTaskToggled(taskId, task.completed);
@@ -615,40 +643,48 @@ export default function TasksScreen() {
           elevation: 3
         }
       ]}>
-        <View style={styles.progressBar}>
-          {Array(blocks)
-            .fill(0)
-            .map((_, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.progressBlock,
-                  {
-                    backgroundColor: themes[currentTheme].background,
-                    borderWidth: 1,
-                    borderColor: index < filledBlocks ? themes[currentTheme].accent : themes[currentTheme].border,
-                    ...(index < filledBlocks && {
-                      backgroundColor: themes[currentTheme].accent,
-                      shadowColor: themes[currentTheme].accent,
-                      shadowOffset: { width: 0, height: 0 },
-                      shadowOpacity: 0.5,
-                      shadowRadius: 2,
-                      elevation: 2
-                    })
-                  }
-                ]}
-              />
-            ))}
+        <View style={styles.progressBarContent}>
+          <View style={styles.progressBar}>
+            {Array(blocks)
+              .fill(0)
+              .map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.progressBlock,
+                    {
+                      backgroundColor: themes[currentTheme].background,
+                      borderWidth: 1,
+                      borderColor: index < filledBlocks ? themes[currentTheme].accent : themes[currentTheme].border,
+                      ...(index < filledBlocks && {
+                        backgroundColor: themes[currentTheme].accent,
+                        shadowColor: themes[currentTheme].accent,
+                        shadowOffset: { width: 0, height: 0 },
+                        shadowOpacity: 0.5,
+                        shadowRadius: 2,
+                        elevation: 2
+                      })
+                    }
+                  ]}
+                />
+              ))}
+          </View>
+          <Text style={[
+            styles.progressText,
+            {
+              color: percentage === 100 ? themes[currentTheme].success : themes[currentTheme].accent,
+              fontWeight: percentage === 100 ? 'bold' : 'normal'
+            }
+          ]}>
+            {percentage}% COMPLETE
+          </Text>
         </View>
-        <Text style={[
-          styles.progressText,
-          {
-            color: percentage === 100 ? themes[currentTheme].success : themes[currentTheme].accent,
-            fontWeight: percentage === 100 ? 'bold' : 'normal'
-          }
-        ]}>
-          {percentage}% COMPLETE
-        </Text>
+        <TouchableOpacity
+          style={styles.themeButton}
+          onPress={handleThemeButtonClick}
+        >
+          <Ionicons name="color-palette-outline" size={16} color={themes[currentTheme].accent} />
+        </TouchableOpacity>
       </View>
     );
   };
@@ -693,11 +729,10 @@ export default function TasksScreen() {
   };
 
   const deleteTask = async (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-    
-    setTaskToDelete(task);
-    setIsDeleteTaskAlertVisible(true);
+    const updatedTasks = tasks.filter(task => task.id !== taskId);
+    setTasks(updatedTasks);
+    await saveTasks(updatedTasks);
+    analytics.trackTaskDeleted(taskId, activeTab);
   };
 
   const handleTaskEdit = (task: Task) => {
@@ -767,24 +802,6 @@ export default function TasksScreen() {
   const handleTabPress = (tabId: string) => {
     setActiveTab(tabId);
     analytics.trackTabViewed(tabId);
-  };
-
-  const handleDeleteTask = async () => {
-    if (!taskToDelete) return;
-    
-    const updatedTasks = tasks.filter(task => task.id !== taskToDelete.id);
-    setTasks(updatedTasks);
-    await saveTasks(updatedTasks);
-    analytics.trackTaskDeleted(taskToDelete.id, activeTab);
-    
-    setIsDeleteTaskAlertVisible(false);
-    setTaskToDelete(null);
-  };
-
-  const handlePremiumButtonClick = () => {
-    analytics.trackButtonClick('premium', 'header');
-    setIsPremiumModalVisible(true);
-    analytics.trackModalOpened('premium');
   };
 
   const handleThemeButtonClick = () => {
@@ -867,16 +884,10 @@ export default function TasksScreen() {
   }
 
   return (
-    <SafeAreaView style={[
-      styles.safeArea,
-      { backgroundColor: theme.background }
-    ]}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <StatusBar barStyle="light-content" />
       <KeyboardAvoidingView
-        style={[
-          styles.container,
-          { backgroundColor: theme.background }
-        ]}
+        style={[styles.container, { backgroundColor: theme.background }]}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <TabBar
@@ -887,33 +898,8 @@ export default function TasksScreen() {
           onCloseTab={closeTab}
           theme={theme}
         />
-        <View style={[styles.header, { borderBottomColor: theme.border }]}>
-          <Text style={[styles.headerTitle, { color: theme.accent }]}>
-            $ todo
-          </Text>
-          <View style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={handlePremiumButtonClick}
-            >
-              <Text style={[styles.headerButtonText, { color: theme.accent }]}>
-                pro
-              </Text>
-            </TouchableOpacity>
-            <Text style={[styles.headerButtonText, { color: theme.muted }]}>|</Text>
-            <TouchableOpacity
-              style={styles.headerButton}
-              onPress={handleThemeButtonClick}
-            >
-              <Text style={[styles.headerButtonText, { color: theme.accent }]}>
-                theme
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
         {renderProgressBar()}
-        {renderStats()}
+        {/* {renderStats()} */}
 
         {isAddingTask ? (
           <View style={styles.addTaskContainer}>
@@ -933,10 +919,11 @@ export default function TasksScreen() {
                 selectionColor={theme.accent}
                 returnKeyType="done"
                 onSubmitEditing={() => handleAddTaskSubmit(newTask)}
+                cursorColor={theme.accent}
               />
             </View>
             <View style={styles.buttonRow}>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 style={[styles.button, { 
                   opacity: !newTask.trim() ? 0.5 : 1 
                 }]}
@@ -946,7 +933,7 @@ export default function TasksScreen() {
                 <Text style={[styles.buttonText, { color: theme.accent }]}>
                   add
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCancelAddTask}
@@ -1013,55 +1000,6 @@ export default function TasksScreen() {
           isUpgrading={isUpgrading}
           onShowPrivacy={() => setIsPrivacyModalVisible(true)}
           onShowTerms={() => setIsTermsModalVisible(true)}
-        />
-
-        <ThemedAlert
-          visible={isCloseTabAlertVisible}
-          title="Close Tab"
-          message={tabToClose ? `Are you sure you want to close "${tabToClose.title}"? Tasks in this tab will be moved to the first tab.` : ''}
-          theme={theme}
-          onDismiss={() => {
-            setIsCloseTabAlertVisible(false);
-            setTabToClose(null);
-          }}
-          actions={[
-            {
-              text: "Cancel",
-              style: "cancel",
-              onPress: () => {
-                setIsCloseTabAlertVisible(false);
-                setTabToClose(null);
-              }
-            },
-            {
-              text: "Close",
-              style: "destructive",
-              onPress: handleCloseTab
-            }
-          ]}
-        />
-
-        <ThemedAlert
-          visible={isDeleteTaskAlertVisible}
-          title="rm -rf task"
-          message={taskToDelete ? `Are you sure you want to delete "${taskToDelete.text}"?` : ''}
-          theme={theme}
-          onDismiss={() => setIsDeleteTaskAlertVisible(false)}
-          actions={[
-            {
-              text: "Cancel",
-              style: "cancel",
-              onPress: () => {
-                setIsDeleteTaskAlertVisible(false);
-                setTaskToDelete(null);
-              }
-            },
-            {
-              text: "Delete",
-              style: "destructive",
-              onPress: handleDeleteTask
-            }
-          ]}
         />
 
         <LegalModal
