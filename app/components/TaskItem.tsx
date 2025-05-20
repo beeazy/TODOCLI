@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { analytics } from '../services/analytics';
 import { Theme } from '../types';
 import PriorityModal from './PriorityModal';
 
@@ -72,22 +71,18 @@ export default function TaskItem({
   }, [item.completed]);
 
   const handleToggle = () => {
-    analytics.trackButtonClick('toggle_task', `task_${item.id}`);
     onToggle(item.id);
   };
 
   const handleEdit = () => {
-    analytics.trackButtonClick('edit_task', `task_${item.id}`);
     onEdit(item);
   };
 
   const handleDelete = () => {
-    analytics.trackButtonClick('delete_task', `task_${item.id}`);
     onDelete(item.id);
   };
 
   const handlePriorityChange = (newPriority: Task['priority']) => {
-    analytics.trackButtonClick('change_priority', `task_${item.id}`);
     // if (!isPremium) {
     //   analytics.trackInteraction('premium_required', 'priority_change', { taskId: item.id });
     //   onPremiumPrompt();

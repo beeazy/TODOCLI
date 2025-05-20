@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { View } from "react-native";
+import { analytics } from "./services/analytics";
 import { initializeAnalytics } from "./services/init";
 
 export default function Layout() {
@@ -10,6 +11,7 @@ export default function Layout() {
 
   useEffect(() => {
     initializeAnalytics();
+    analytics.trackAppLaunch();
   }, []);
 
   return (

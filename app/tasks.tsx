@@ -22,7 +22,6 @@ import TabBar from './components/TabBar';
 import TaskItem from './components/TaskItem';
 import ThemeModal, { themes } from './components/ThemeModal';
 import { PRIVACY_POLICY, TERMS_OF_SERVICE } from './constants/legal';
-import { analytics } from './services/analytics';
 import { Theme } from './types';
 
 const styles = StyleSheet.create({
@@ -489,7 +488,6 @@ export default function TasksScreen() {
     setTabs(updatedTabs);
     setActiveTab(newTab.id);
     await saveTabs(updatedTabs);
-    analytics.trackTabCreated(newTab.id);
   };
 
   const closeTab = async (tabId: string) => {
@@ -515,7 +513,6 @@ export default function TasksScreen() {
     }
     
     await saveTabs(updatedTabs);
-    analytics.trackTabDeleted(tabId);
   };
 
   const STORAGE_KEY = '@terminal_todo_app';
@@ -581,7 +578,6 @@ export default function TasksScreen() {
     const updatedTasks = sortTasksByPriority([...tasks, newTask]);
     setTasks(updatedTasks);
     await saveTasks(updatedTasks);
-    analytics.trackTaskCreated(activeTab);
   };
 
   const toggleTask = async (taskId: string) => {
@@ -605,7 +601,6 @@ export default function TasksScreen() {
         const finalTasks = updatedTasks.filter(task => !taskIds.includes(task.id));
         setTasks(finalTasks);
         await saveTasks(finalTasks);
-        taskIds.forEach(id => analytics.trackTaskDeleted(id, activeTab));
       }, 1000); // 1 second delay to show completion
     }
 
@@ -614,7 +609,7 @@ export default function TasksScreen() {
     
     const task = updatedTasks.find(t => t.id === taskId);
     if (task) {
-      analytics.trackTaskToggled(taskId, task.completed);
+      // Removed: analytics.trackTaskToggled(taskId, task.completed);
     }
   };
 
@@ -725,14 +720,14 @@ export default function TasksScreen() {
     });
     setTasks(updatedTasks);
     await saveTasks(updatedTasks);
-    analytics.trackTaskUpdated(taskId, activeTab);
+    // Removed: analytics.trackTaskUpdated(taskId, activeTab);
   };
 
   const deleteTask = async (taskId: string) => {
     const updatedTasks = tasks.filter(task => task.id !== taskId);
     setTasks(updatedTasks);
     await saveTasks(updatedTasks);
-    analytics.trackTaskDeleted(taskId, activeTab);
+    // Removed: analytics.trackTaskDeleted(taskId, activeTab);
   };
 
   const handleTaskEdit = (task: Task) => {
@@ -754,7 +749,7 @@ export default function TasksScreen() {
     );
     setTasks(updatedTasks);
     await saveTasks(updatedTasks);
-    analytics.trackPriorityChanged(taskId, newPriority || 'P?');
+    // Removed: analytics.trackPriorityChanged(taskId, newPriority || 'P?');
   };
 
   const theme = themes[currentTheme];
@@ -777,7 +772,7 @@ export default function TasksScreen() {
         "Thank you for upgrading to Pro! All premium features are now unlocked.",
         [{ text: "OK" }]
       );
-      analytics.trackPremiumUpgrade();
+      // Removed: analytics.trackPremiumUpgrade();
     } catch (error) {
       Alert.alert(
         "Upgrade Failed",
@@ -793,7 +788,7 @@ export default function TasksScreen() {
     try {
       await AsyncStorage.setItem(THEME_STORAGE_KEY, themeName);
       setCurrentTheme(themeName);
-      analytics.trackThemeChanged(themeName);
+      // Removed: analytics.trackThemeChanged(themeName);
     } catch (error) {
       console.error("Error saving theme", error);
     }
@@ -801,17 +796,14 @@ export default function TasksScreen() {
 
   const handleTabPress = (tabId: string) => {
     setActiveTab(tabId);
-    analytics.trackTabViewed(tabId);
   };
 
   const handleThemeButtonClick = () => {
-    analytics.trackButtonClick('theme', 'header');
     setIsThemeModalVisible(true);
-    analytics.trackModalOpened('theme');
+    // Removed: analytics.trackModalOpened('theme');
   };
 
   const handleAddTaskClick = () => {
-    analytics.trackButtonClick('add_task', 'main');
     setIsAddingTask(true);
   };
 
@@ -820,20 +812,17 @@ export default function TasksScreen() {
     if (!trimmedText) {
       return; // Don't add empty tasks
     }
-    analytics.trackInputSubmit('add_task', 'task_input');
     addTask(trimmedText);
     setNewTask("");
     setIsAddingTask(false);
   };
 
   const handleCancelAddTask = () => {
-    analytics.trackButtonClick('cancel_add_task', 'task_input');
     setNewTask("");
     setIsAddingTask(false);
   };
 
   const handleEditModalClose = () => {
-    analytics.trackModalClosed('edit_task');
     setEditingTask(null);
   };
 
@@ -843,19 +832,16 @@ export default function TasksScreen() {
       return; // Don't save empty tasks
     }
     if (editingTask) {
-      analytics.trackModalAction('edit_task', 'save');
       updateTask(editingTask.id, trimmedText);
       setEditingTask(null);
     }
   };
 
   const handleThemeModalClose = () => {
-    analytics.trackModalClosed('theme');
     setIsThemeModalVisible(false);
   };
 
   const handlePremiumModalClose = () => {
-    analytics.trackModalClosed('premium');
     setIsPremiumModalVisible(false);
   };
 
@@ -923,17 +909,6 @@ export default function TasksScreen() {
               />
             </View>
             <View style={styles.buttonRow}>
-              {/* <TouchableOpacity
-                style={[styles.button, { 
-                  opacity: !newTask.trim() ? 0.5 : 1 
-                }]}
-                onPress={() => handleAddTaskSubmit(newTask)}
-                disabled={!newTask.trim()}
-              >
-                <Text style={[styles.buttonText, { color: theme.accent }]}>
-                  add
-                </Text>
-              </TouchableOpacity> */}
               <TouchableOpacity
                 style={styles.button}
                 onPress={handleCancelAddTask}
