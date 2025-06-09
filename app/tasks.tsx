@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Haptics from 'expo-haptics';
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -15,9 +16,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
-import LegalModal from './components/LegalModal';
 import OnboardingScreen from './components/OnboardingScreen';
-import PremiumModal from './components/PremiumModal';
 import TabBar from './components/TabBar';
 import TaskItem from './components/TaskItem';
 import ThemeModal, { themes } from './components/ThemeModal';
@@ -33,6 +32,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: Platform.OS === 'ios' ? 12 : (StatusBar.currentHeight ?? 24) + 12,
     paddingBottom: Platform.OS === 'ios' ? 34 : 24,
+    maxWidth: 600,
   },
   header: {
     flexDirection: "row",
@@ -581,6 +581,9 @@ export default function TasksScreen() {
   };
 
   const toggleTask = async (taskId: string) => {
+    // Trigger haptic feedback
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
     const updatedTasks = tasks.map(task => {
       if (task.id === taskId) {
         return { ...task, completed: !task.completed };
@@ -593,6 +596,9 @@ export default function TasksScreen() {
     const allTasksCompleted = currentTabTasks.length > 0 && currentTabTasks.every(task => task.completed);
 
     if (allTasksCompleted) {
+      // If all tasks are completed, trigger success haptic feedback
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
       // If all tasks are completed, animate and delete them
       const taskIds = currentTabTasks.map(task => task.id);
       
@@ -966,7 +972,7 @@ export default function TasksScreen() {
           onSelectTheme={saveTheme}
         />
 
-        <PremiumModal
+        {/* <PremiumModal
           visible={isPremiumModalVisible}
           onClose={handlePremiumModalClose}
           theme={theme}
@@ -975,9 +981,9 @@ export default function TasksScreen() {
           isUpgrading={isUpgrading}
           onShowPrivacy={() => setIsPrivacyModalVisible(true)}
           onShowTerms={() => setIsTermsModalVisible(true)}
-        />
+        /> */}
 
-        <LegalModal
+        {/* <LegalModal
           visible={isPrivacyModalVisible}
           onClose={() => setIsPrivacyModalVisible(false)}
           title="Privacy Policy"
@@ -991,7 +997,7 @@ export default function TasksScreen() {
           title="Terms of Service"
           content={TERMS_OF_SERVICE}
           theme={theme}
-        />
+        /> */}
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

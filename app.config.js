@@ -68,11 +68,16 @@ export default {
     updates: {
       url: "https://u.expo.dev/05412c76-ac91-44d6-a20f-e49ca701345f"
     },
-    runtimeVersion: "1.0.0",
+    runtimeVersion: "1.0.1",
 
     // Plugins configuration
     plugins: [
-      'expo-router',
+      [
+        'expo-router',
+        {
+          sitemap: false
+        }
+      ],
       [
         'expo-splash-screen',
         {
